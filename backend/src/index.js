@@ -2,13 +2,21 @@ import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import { initializePool } from './config/database.js';
+
 import customerRoutes from './routes/customer.js';
+import supplierRoutes from './routes/supplier.js';
+import categoryRoutes from './routes/category.js';
+import productRoutes from './routes/product.js';
+import inventoryRoutes from './routes/inventory.js';
+import orderRoutes from './routes/order.js';
+import itemRoutes from './routes/item.js';
+import paymentRoutes from './routes/payment.js';
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
 }));
 
@@ -21,6 +29,13 @@ app.get('/health', (req, res) => {
 
 // API Routes
 app.use('/api/customers', customerRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/items', itemRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // 404 handler
 app.use((req, res) => {
@@ -33,7 +48,6 @@ app.use((err, req, res, next) => {
     res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
-// Start server after DB pool is ready
 async function startServer() {
     try {
         await initializePool();
@@ -43,7 +57,6 @@ async function startServer() {
             console.log(`Server started on port ${PORT}`);
         });
 
-        // Graceful shutdown
         process.on('SIGTERM', () => {
             console.log('SIGTERM received, shutting down gracefully');
             server.close(() => process.exit(0));

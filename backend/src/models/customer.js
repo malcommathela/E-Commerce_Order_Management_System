@@ -1,4 +1,5 @@
-import { getConnection} from "../config/database..js";
+import { getConnection} from "../config/database.js";
+import oracledb from 'oracledb';
 
 const customer = {
 
@@ -62,16 +63,15 @@ const customer = {
         }
 
         try {
-            const result = await connection.execute()
-        }
-        catch (e) {
+
             const result = await connection.execute(
                 `UPDATE CUSTOMER
-         SET ${fields.join(', ')}
-         WHERE customer_id = :customer_id`,
+                SET ${fields.join(', ')}
+                WHERE customer_id = :customer_id`,
                 binds,
                 { autoCommit: true }
             );
+
             return result.rowsAffected > 0;
         }
         finally {
