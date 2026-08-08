@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import 'dotenv/config';
 import { initializePool } from './config/database.js';
 
@@ -11,6 +12,7 @@ import inventoryRoutes from './routes/inventory.js';
 import orderRoutes from './routes/order.js';
 import itemRoutes from './routes/item.js';
 import paymentRoutes from './routes/payment.js';
+import authRoutes from './routes/auth.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -21,6 +23,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Health check
 app.get('/health', (req, res) => {
@@ -28,6 +31,7 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/categories', categoryRoutes);

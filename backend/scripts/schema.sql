@@ -1,13 +1,13 @@
-DROP TABLE ORDER_ITEM CASCADE CONSTRAINTS
-/
-
 DROP TABLE PAYMENT CASCADE CONSTRAINTS
 /
 
-DROP TABLE INVENTORY CASCADE CONSTRAINTS
+DROP TABLE ORDER_ITEM CASCADE CONSTRAINTS
 /
 
 DROP TABLE ORDERS CASCADE CONSTRAINTS
+/
+
+DROP TABLE INVENTORY CASCADE CONSTRAINTS
 /
 
 DROP TABLE PRODUCT CASCADE CONSTRAINTS
@@ -21,6 +21,30 @@ DROP TABLE SUPPLIER CASCADE CONSTRAINTS
 
 DROP TABLE CUSTOMER CASCADE CONSTRAINTS
 /
+
+DROP TABLE USERS CASCADE CONSTRAINTS
+/
+
+CREATE TABLE USERS (
+                       user_id                 NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+                       username                VARCHAR2(100) NOT NULL UNIQUE,
+                       email                   VARCHAR2(255) NOT NULL UNIQUE,
+                       password_hash           VARCHAR2(255) NOT NULL,
+                       first_name              VARCHAR2(100) NOT NULL,
+                       last_name               VARCHAR2(100) NOT NULL,
+                       role                    VARCHAR2(50) DEFAULT 'MANAGER'
+                            CHECK (role IN ('ADMIN', 'MANAGER', 'STAFF')),
+                       email_verified          NUMBER(1) DEFAULT 0
+                            CHECK (email_verified IN (0, 1)),
+                       verification_code       VARCHAR2(10),
+                       verification_expires_at TIMESTAMP,
+                       is_active               NUMBER(1) DEFAULT 1
+                            CHECK (is_active IN (0, 1)),
+                       last_login_at           TIMESTAMP,
+                       created_at              TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                       updated_at              TIMESTAMP
+)
+    /
 
 CREATE TABLE CUSTOMER (
                           customer_id     NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -113,20 +137,40 @@ CREATE TABLE PAYMENT (
 )
     /
 
-CREATE INDEX idx_orders_customer ON ORDERS(customer_id)
+CREATE INDEX idx_users_email       ON USERS(email)
     /
 
-CREATE INDEX idx_orders_status ON ORDERS(status)
+CREATE INDEX idx_users_username    ON USERS(username)
     /
 
-CREATE INDEX idx_oi_order ON ORDER_ITEM(order_id)
+CREATE INDEX idx_users_role        ON USERS(role)
     /
 
-CREATE INDEX idx_oi_product ON ORDER_ITEM(product_id)
+CREATE INDEX idx_users_active      ON USERS(is_active)
     /
 
-CREATE INDEX idx_product_category ON PRODUCT(category_id)
+CREATE INDEX idx_orders_customer   ON ORDERS(customer_id)
     /
+
+CREATE INDEX idx_orders_status     ON ORDERS(status)
+    /
+
+CREATE INDEX idx_oi_order          ON ORDER_ITEM(order_id)
+    /
+
+CREATE INDEX idx_oi_product        ON ORDER_ITEM(product_id)
+    /
+
+CREATE INDEX idx_product_category  ON PRODUCT(category_id)
+    /
+
+CREATE OR REPLACE TRIGGER trg_users_updated_at
+BEFORE UPDATE ON USERS
+                  FOR EACH ROW
+BEGIN
+    :NEW.updated_at := CURRENT_TIMESTAMP;
+END;
+/
 
 CREATE OR REPLACE TRIGGER trg_update_inventory
 AFTER INSERT ON ORDER_ITEM
