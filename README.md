@@ -9,7 +9,7 @@ A full-stack order management platform built as a capstone project. Handles the 
 | **Frontend** | React 19, Vite 8, Axios, React Router 6 |
 | **Backend** | Node.js 20, Express 4, oracledb |
 | **Database** | Oracle Database 21c XE (Docker) |
-| **Auth** | JWT (httpOnly cookies), bcrypt, nodemailer |
+| **Auth** | JWT (httpOnly cookies), bcrypt, nodemailer, cookie-parser |
 | **DevOps** | Docker Compose |
 
 ## Core Features
@@ -29,9 +29,11 @@ A full-stack order management platform built as a capstone project. Handles the 
   - `MANAGER` — Create, read, update, delete all business entities
   - `STAFF` — Read all data, create/update orders & order items
 - **Protected API** — All entity routes require valid auth + appropriate role
+- **Protected Frontend** — Unauthenticated users are redirected to login; authenticated users see role-based UI
 
 ### Frontend
 - **Dashboard** — Live KPIs (orders, revenue, products, low stock, customers)
+- **Auth Pages** — Login, signup, and email verification with responsive split-layout design
 - **CRUD Pages** — 8 entity modules with search, sort, create, edit, delete
 - **Responsive Layout** — Dark sidebar, status indicators, modal forms
 - **Data Normalization** — Oracle UPPERCASE keys auto-converted to camelCase
@@ -65,22 +67,22 @@ A full-stack order management platform built as a capstone project. Handles the 
 |--------|----------|------|-------------|
 | `POST` | `/api/auth/signup` | Public | Register new staff account |
 | `POST` | `/api/auth/verify-email` | Public | Confirm 6-digit email code |
-| `POST` | `/api/auth/resend-email` | Public | Resend verification code |
-| `POST` | `/api/auth/login` | Public | Login, sets session cookie |
+| `POST` | `/api/auth/resend-email` | Public | Resend verification code (1-min cooldown) |
+| `POST` | `/api/auth/login` | Public | Login, sets `oms_session` httpOnly cookie |
 | `POST` | `/api/auth/logout` | Public | Clear session cookie |
-| `GET` | `/api/auth/me` | Required | Get current user profile |
+| `GET` | `/api/auth/me` | Cookie | Get current user profile |
 
-### Entity Endpoints (all require auth)
-| Resource | Base | Roles (C/R/U/D) |
-|----------|------|-----------------|
-| Customers | `/api/customers` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Suppliers | `/api/suppliers` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Categories | `/api/categories` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Products | `/api/products` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Inventory | `/api/inventory` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Orders | `/api/orders` | ALL / ALL / ALL / ADMIN,MANAGER |
-| Order Items | `/api/items` | ALL / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
-| Payments | `/api/payments` | ADMIN,MANAGER / ALL / ADMIN,MANAGER / ADMIN,MANAGER |
+### Entity Endpoints (all require auth cookie)
+| Resource | Base | Create | Read | Update | Delete |
+|----------|------|--------|------|--------|--------|
+| Customers | `/api/customers` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Suppliers | `/api/suppliers` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Categories | `/api/categories` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Products | `/api/products` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Inventory | `/api/inventory` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Orders | `/api/orders` | ALL | ALL | ALL | ADMIN, MANAGER |
+| Order Items | `/api/items` | ALL | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+| Payments | `/api/payments` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
 
 > `ALL` = ADMIN, MANAGER, STAFF
 
@@ -92,13 +94,13 @@ E-Commerce Order Management System/
 │   ├── scripts/
 │   │   ├── schema.sql          # Oracle DDL (9 tables + triggers + indexes)
 │   │   ├── schema.js           # Schema runner
-│   │   ├── seed.sql            # Sample data
+│   │   ├── seed.sql            # Sample data + seeded admin user
 │   │   └── seed.js             # Seed runner
 │   ├── src/
 │   │   ├── config/
 │   │   │   └── database.js     # Oracle connection pool
 │   │   ├── controllers/
-│   │   │   ├── auth.js         # Login, signup, verify, logout
+│   │   │   ├── auth.js         # Login, signup, verify, resend, logout, me
 │   │   │   ├── category.js
 │   │   │   ├── customer.js
 │   │   │   ├── inventory.js
@@ -131,34 +133,42 @@ E-Commerce Order Management System/
 │   │   │   └── supplier.js     # Protected routes
 │   │   ├── utils/
 │   │   │   └── email.js        # Nodemailer Gmail transport
-│   │   └── index.js            # Express app, CORS, cookie-parser
+│   │   └── index.js            # Express app, CORS, cookie-parser, auth mount
 │   ├── .env
 │   ├── package.json
 │   └── package-lock.json
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
-│   │   │   └── apiService.js   # Axios instance + 40+ endpoints
+│   │   │   ├── apiService.js   # Axios instance + 40+ endpoints
+│   │   │   └── auth.js         # Auth API wrappers
 │   │   ├── components/
 │   │   │   ├── DataTable.jsx   # Search, sort, actions
 │   │   │   ├── Header.jsx      # Status indicator
 │   │   │   ├── Layout.jsx      # Sidebar + content wrapper
 │   │   │   ├── Modal.jsx       # Create/Edit dialogs
-│   │   │   ├── Sidebar.jsx     # Navigation
+│   │   │   ├── ProtectedRoute.jsx # Route guard (auth + role check)
+│   │   │   ├── Sidebar.jsx     # Navigation + user info + logout
 │   │   │   └── StatCard.jsx    # KPI cards
+│   │   ├── context/
+│   │   │   └── AuthContext.jsx # Global auth state (user, login, logout)
 │   │   ├── pages/
 │   │   │   ├── Dashboard.jsx   # Live KPIs + recent orders
 │   │   │   ├── Categories.jsx
 │   │   │   ├── Customers.jsx
 │   │   │   ├── Inventory.jsx
+│   │   │   ├── Login.jsx       # Split-layout login page
 │   │   │   ├── OrderItems.jsx
 │   │   │   ├── Orders.jsx
 │   │   │   ├── Payments.jsx
 │   │   │   ├── Products.jsx
-│   │   │   └── Suppliers.jsx
+│   │   │   ├── Signup.jsx      # Split-layout signup page
+│   │   │   ├── Suppliers.jsx
+│   │   │   └── VerifyEmail.jsx # 6-digit code verification page
 │   │   ├── styles/
+│   │   │   ├── Auth.css        # Shared auth page styles
 │   │   │   └── global.css
-│   │   ├── App.jsx             # Router + Layout
+│   │   ├── App.jsx             # Router + AuthProvider + route protection
 │   │   └── main.jsx
 │   ├── index.html
 │   ├── package.json
@@ -181,11 +191,13 @@ E-Commerce Order Management System/
 docker-compose up -d
 ```
 
+> If port 1521 is occupied by a local Oracle listener, either stop the local service (`Stop-Process -Id (Get-NetTCPConnection -LocalPort 1521).OwningProcess -Force`) or change the port mapping in `docker-compose.yml` to `"1522:1521"` and update `DB_CONNECTION_STRING` accordingly.
+
 ### 2. Initialize Database
 ```bash
 cd backend
 node scripts/schema.js   # Creates all 9 tables + triggers + indexes
-node scripts/seed.js     # Inserts sample customers, products, orders
+node scripts/seed.js     # Inserts sample data + pre-verified admin user
 ```
 
 ### 3. Configure Environment
@@ -208,29 +220,53 @@ EMAIL_PASS=your-gmail-app-password
 VITE_API_URL=http://localhost:3001/api
 ```
 
-### 4. Start Backend
+### 4. Install Dependencies
+
 ```bash
+# Backend
 cd backend
 npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+> The backend requires `jsonwebtoken`, `bcrypt`, `cookie-parser`, and `nodemailer`. If any are missing, run:
+> ```bash
+> cd backend && npm install jsonwebtoken bcrypt cookie-parser nodemailer
+> ```
+
+### 5. Start Backend
+```bash
+cd backend
 npm run dev
 ```
 
-### 5. Start Frontend
+### 6. Start Frontend
 ```bash
 cd frontend
-npm install
 npm run dev
 ```
 
-### 6. Open App
+### 7. Open App
 Navigate to `http://localhost:5173`
 
-### 7. Create First Admin
-Use the signup page or curl:
-```bash
-curl -X POST http://localhost:3001/api/auth/signup   -H "Content-Type: application/json"   -d '{"username":"admin","email":"admin@oms.local","password":"admin123","firstName":"Admin","lastName":"User","role":"ADMIN"}'
-```
-Then verify the email with the 6-digit code sent to your inbox.
+You will be redirected to `/login`. Use the seeded admin account below, or sign up as a new staff member.
+
+## Seeded Admin Account
+
+The seed script creates a pre-verified admin user so you can log in immediately without email setup:
+
+| Field | Value                |
+|-------|----------------------|
+| **Email** | `root@gmail.com`     |
+| **Password** | `admin123`           |
+| **Username** | `admin`              |
+| **Role** | `ADMIN`              |
+| **Status** | Pre-verified, active |
+
+> In production, replace this with a real email address and rotate the password.
 
 ## Environment Variables
 
@@ -240,7 +276,7 @@ Then verify the email with the 6-digit code sent to your inbox.
 | `DB_USER` | Yes | Oracle username |
 | `DB_PASSWORD` | Yes | Oracle password |
 | `DB_CONNECTION_STRING` | Yes | Oracle host:port/service |
-| `FRONTEND_URL` | Yes | CORS origin |
+| `FRONTEND_URL` | Yes | CORS origin (e.g. `http://localhost:5173`) |
 | `JWT_SECRET` | Yes | JWT signing key (min 32 chars) |
 | `EMAIL_USER` | Yes | Gmail address for verification emails |
 | `EMAIL_PASS` | Yes | Gmail app password (not your login password) |
@@ -248,6 +284,7 @@ Then verify the email with the 6-digit code sent to your inbox.
 
 ## Auth Flow
 
+### Backend
 ```
 ┌─────────┐    signup     ┌──────────┐    send email    ┌─────────┐
 │  Client │ ─────────────→│  Backend │ ────────────────→│  Gmail  │
@@ -269,15 +306,39 @@ Then verify the email with the 6-digit code sent to your inbox.
      │ ───────────────────────→│                            │
 ```
 
+### Frontend
+```
+/unauthenticated → /login ──→ /signup ──→ /verify-email ──→ /login ──→ / (Dashboard)
+                     ↑                                                    │
+                     └──────────────── /logout ←──────────────────────────┘
+```
+
+- Unauthenticated users hitting any app route are redirected to `/login`
+- After successful login, users are redirected to their originally requested page (or Dashboard)
+- The sidebar displays the current user's name, role, and a logout button
+- All Axios requests include `withCredentials: true` to send the `oms_session` cookie
+
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `docker-compose up -d` | Start Oracle container |
 | `node scripts/schema.js` | Drop & recreate all tables |
-| `node scripts/seed.js` | Insert test data |
-| `npm run dev` | Start Express dev server |
+| `node scripts/seed.js` | Insert test data + admin user |
+| `npm run dev` (backend) | Start Express dev server |
 | `npm run dev` (frontend) | Start Vite dev server |
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| Port 1521 already in use | Stop local Oracle listener or map Docker to `1522:1521` |
+| `ERR_MODULE_NOT_FOUND` for `jsonwebtoken` / `bcrypt` / `nodemailer` / `cookie-parser` | Run `npm install jsonwebtoken bcrypt cookie-parser nodemailer` in `backend/` |
+| CORS errors in browser | Ensure `FRONTEND_URL` in backend `.env` matches your Vite dev server URL |
+| Cookie not sent with API calls | Verify `withCredentials: true` in `apiService.js` and `credentials: true` in backend CORS |
+| `ORA-01408: such column list already indexed` | Harmless — Oracle auto-indexes `UNIQUE` columns; explicit `CREATE INDEX` is redundant |
+| Seed fails with `PLS-00103: Encountered the symbol "/"` | Remove the trailing `/` from `seed.sql` after `END;` |
+| Email verification code not received | Check backend console for send errors; ensure `EMAIL_USER` and `EMAIL_PASS` are set |
 
 ## Team Roles (Capstone)
 
@@ -285,13 +346,9 @@ Then verify the email with the 6-digit code sent to your inbox.
 |------|---------------|
 | Database Architect | Oracle schema design, normalization, triggers |
 | Backend Developer | Express REST API, Oracle models, auth system |
-| Frontend Developer | React UI, Axios integration, dashboard |
+| Frontend Developer | React UI, Axios integration, dashboard, auth pages |
 | DevOps | Docker setup, environment config, deployment |
 
 ## License
 
 Capstone Project — Academic Use Only
-
-## Demo Credentials
-- Email: root@gmail.com
-- Password: admin123
