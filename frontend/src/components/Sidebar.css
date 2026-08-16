@@ -40,3 +40,41 @@
   color: #6b7280;
   text-align: center;
 }
+
+.sidebar-user {
+  padding: 16px 24px;
+  border-top: 1px solid #1f2937;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 2px;
+}
+
+.user-role {
+  font-size: 11px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: 8px 12px;
+  background: #374151;
+  color: #fff;
+  border: 1px solid #4b5563;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.logout-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+}

@@ -291,3 +291,7 @@ Then verify the email with the 6-digit code sent to your inbox.
 ## License
 
 Capstone Project — Academic Use Only
+
+## Demo Credentials
+- Email: root@gmail.com
+- Password: admin123

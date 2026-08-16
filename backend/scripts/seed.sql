@@ -26,11 +26,50 @@ v_cust1 NUMBER;
     v_ord2 NUMBER;
     v_ord3 NUMBER;
 
+    -- Admin User ID
+    v_admin_id NUMBER;
+
 BEGIN
 
     ----------------------------------------------------------------------
-    -- 1. CATEGORIES
+    -- 0. ADMIN USER (pre-verified, active, role = ADMIN)
     ----------------------------------------------------------------------
+
+INSERT INTO USERS (
+    username,
+    email,
+    password_hash,
+    first_name,
+    last_name,
+    role,
+    email_verified,
+    verification_code,
+    verification_expires_at,
+    is_active,
+    last_login_at,
+    created_at,
+    updated_at
+)
+VALUES (
+           'admin',
+           'root@gmail.com',
+           '$2b$12$39P3LjZcNIce57echsjQ3.Ux/yFwIjVpUsqt73pYHweFUjqNaI8g.',
+           'System',
+           'Administrator',
+           'ADMIN',
+           1,
+           NULL,
+           NULL,
+           1,
+           SYSTIMESTAMP,
+           SYSTIMESTAMP,
+           SYSTIMESTAMP
+       )
+    RETURNING user_id INTO v_admin_id;
+
+----------------------------------------------------------------------
+-- 1. CATEGORIES
+----------------------------------------------------------------------
 
 INSERT INTO CATEGORY (name, description)
 VALUES (
@@ -492,4 +531,3 @@ VALUES (
 COMMIT;
 
 END;
-/

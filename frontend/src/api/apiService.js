@@ -16,7 +16,8 @@ const normalizeKeys = (obj) => {
 const api = axios.create({
   baseURL: API_BASE,
   timeout: 15000,
-  headers: { 'Content-Type': 'application/json' }
+  headers: { 'Content-Type': 'application/json' },
+    withCredentials: true
 });
 
 api.interceptors.response.use(
