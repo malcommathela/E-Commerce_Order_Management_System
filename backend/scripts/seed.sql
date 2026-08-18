@@ -351,6 +351,8 @@ VALUES (
        )
     RETURNING customer_id INTO v_cust2;
 
+
+
 INSERT INTO CUSTOMER (
     first_name,
     last_name,
@@ -370,6 +372,9 @@ VALUES (
            '560001'
        )
     RETURNING customer_id INTO v_cust3;
+
+
+
 
 
 ----------------------------------------------------------------------
@@ -404,6 +409,8 @@ VALUES (
            '456 CP Road, Delhi'
        )
     RETURNING order_id INTO v_ord2;
+
+
 
 INSERT INTO ORDERS (
     customer_id,
@@ -479,10 +486,14 @@ VALUES (
        );
 
 
+
+
 ----------------------------------------------------------------------
 -- 8. PAYMENTS
 -- Each payment is linked to an ORDER
 ----------------------------------------------------------------------
+
+
 
 INSERT INTO PAYMENT (
     order_id,
