@@ -14,6 +14,8 @@ import itemRoutes from './routes/item.js';
 import paymentRoutes from './routes/payment.js';
 import authRoutes from './routes/auth.js';
 
+
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 

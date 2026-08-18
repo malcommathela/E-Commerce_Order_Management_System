@@ -7,6 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change-this-secret';
 const JWT_EXPIRES_IN = '7d';
 const COOKIE_NAME = 'oms_session';
 
+// Helper Functions
 function generateCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
