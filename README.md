@@ -1,106 +1,223 @@
 # E-Commerce Order Management System
 
-A full-stack order management platform built as a capstone project. Handles the complete order lifecycle—from internal staff authentication and customer registration to product cataloging, inventory deduction, order fulfillment, and payment tracking.
+A full-stack **E-Commerce Order Management System** developed as a capstone project. The system manages the complete order lifecycle, including staff authentication, customer management, product cataloging, inventory control, order processing, and payment tracking.
 
-## Tech Stack
+The application combines a **React frontend**, **Node.js/Express backend**, and **Oracle Database 21c XE**, with Docker used for local database deployment.
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, Vite 8, Axios, React Router 6 |
-| **Backend** | Node.js 20, Express 4, oracledb |
-| **Database** | Oracle Database 21c XE (Docker) |
-| **Auth** | JWT (httpOnly cookies), bcrypt, nodemailer, cookie-parser |
-| **DevOps** | Docker Compose |
+---
 
-## Core Features
+## 🚀 Features
 
-### Order Management
-- **Customer & Supplier Management** — CRUD with contact details and addresses
-- **Product Catalog** — Category hierarchy, SKU tracking, supplier linkage
-- **Inventory Control** — Real-time stock levels with automatic deduction via Oracle trigger
-- **Order Lifecycle** — PENDING → CONFIRMED → SHIPPED → DELIVERED → CANCELLED
-- **Payment Tracking** — Per-order payments with method & status tracking
+### 📦 Order Management
 
-### Authentication & Authorization
-- **Staff Authentication** — Email/password login with httpOnly session cookies
-- **Email Verification** — 6-digit code sent via Gmail SMTP on signup
-- **Role-Based Access Control (RBAC)** — Three staff tiers:
-  - `ADMIN` — Full system access, user management
-  - `MANAGER` — Create, read, update, delete all business entities
-  - `STAFF` — Read all data, create/update orders & order items
-- **Protected API** — All entity routes require valid auth + appropriate role
-- **Protected Frontend** — Unauthenticated users are redirected to login; authenticated users see role-based UI
+* Customer and supplier management
+* Product catalog and category management
+* SKU and pricing management
+* Real-time inventory tracking
+* Automatic inventory deduction when order items are created
+* Complete order lifecycle management:
 
-### Frontend
-- **Dashboard** — Live KPIs (orders, revenue, products, low stock, customers)
-- **Auth Pages** — Login, signup, and email verification with responsive split-layout design
-- **CRUD Pages** — 8 entity modules with search, sort, create, edit, delete
-- **Responsive Layout** — Dark sidebar, status indicators, modal forms
-- **Data Normalization** — Oracle UPPERCASE keys auto-converted to camelCase
+  * `PENDING`
+  * `CONFIRMED`
+  * `SHIPPED`
+  * `DELIVERED`
+  * `CANCELLED`
+* Order item management
+* Payment tracking by order
+* Payment method and payment status management
 
-## Database Schema
+### 🔐 Authentication & Authorization
 
-9 entities in 3NF:
+* Staff registration and authentication
+* JWT-based authentication
+* Secure `httpOnly` session cookies
+* Email verification using 6-digit verification codes
+* Gmail SMTP integration through Nodemailer
+* Password hashing with bcrypt
+* Role-Based Access Control (RBAC)
 
-| Table | Purpose |
-|-------|---------|
-| `USERS` | Internal staff auth (admin/manager/staff) |
-| `CUSTOMER` | End-customer profiles |
-| `SUPPLIER` | Product vendors |
-| `CATEGORY` | Product taxonomy |
-| `PRODUCT` | Catalog items with pricing & stock |
-| `INVENTORY` | Warehouse stock levels |
-| `ORDERS` | Customer purchase orders |
-| `ORDER_ITEM` | Line items per order |
-| `PAYMENT` | Transaction records |
+#### Staff Roles
 
-### Key Constraints
-- `trg_update_inventory` — Auto-deducts stock on `ORDER_ITEM` insert
-- `trg_users_updated_at` — Auto-updates user `updated_at` timestamp
-- Check constraints on `price >= 0`, `quantity > 0`, `status` enums
-- Foreign keys with `ON DELETE CASCADE` where appropriate
+| Role        | Permissions                                            |
+| ----------- | ------------------------------------------------------ |
+| **ADMIN**   | Full system access and staff/user management           |
+| **MANAGER** | Full CRUD access to business entities                  |
+| **STAFF**   | Read access to business data and order creation/update |
 
-## API Reference
+All protected API routes require authentication and enforce role-based permissions.
 
-### Auth Endpoints
-| Method | Endpoint | Auth | Description |
-|--------|----------|------|-------------|
-| `POST` | `/api/auth/signup` | Public | Register new staff account |
-| `POST` | `/api/auth/verify-email` | Public | Confirm 6-digit email code |
-| `POST` | `/api/auth/resend-email` | Public | Resend verification code (1-min cooldown) |
-| `POST` | `/api/auth/login` | Public | Login, sets `oms_session` httpOnly cookie |
-| `POST` | `/api/auth/logout` | Public | Clear session cookie |
-| `GET` | `/api/auth/me` | Cookie | Get current user profile |
+### 📊 Dashboard
 
-### Entity Endpoints (all require auth cookie)
-| Resource | Base | Create | Read | Update | Delete |
-|----------|------|--------|------|--------|--------|
-| Customers | `/api/customers` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Suppliers | `/api/suppliers` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Categories | `/api/categories` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Products | `/api/products` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Inventory | `/api/inventory` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Orders | `/api/orders` | ALL | ALL | ALL | ADMIN, MANAGER |
-| Order Items | `/api/items` | ALL | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
-| Payments | `/api/payments` | ADMIN, MANAGER | ALL | ADMIN, MANAGER | ADMIN, MANAGER |
+The dashboard provides an overview of the system through live KPIs:
 
-> `ALL` = ADMIN, MANAGER, STAFF
+* Total orders
+* Revenue
+* Products
+* Customers
+* Low-stock products
+* Recent orders
+* Inventory status
 
-## File Structure
+### 🖥️ Frontend
 
+* React 19
+* Responsive dashboard layout
+* Protected routes
+* Role-based navigation
+* Search and sorting
+* CRUD interfaces
+* Modal-based forms
+* Authentication pages
+* Email verification page
+* Data normalization between Oracle and JavaScript naming conventions
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer                | Technology                              |
+| -------------------- | --------------------------------------- |
+| **Frontend**         | React 19, Vite 8, Axios, React Router 6 |
+| **Backend**          | Node.js 20, Express 4, oracledb         |
+| **Database**         | Oracle Database 21c XE                  |
+| **Authentication**   | JWT, httpOnly Cookies, bcrypt           |
+| **Email**            | Nodemailer, Gmail SMTP                  |
+| **Database Hosting** | Docker                                  |
+| **Development**      | Docker Compose                          |
+
+---
+
+# 🗄️ Database Design
+
+The database follows a **normalized relational design in Third Normal Form (3NF)**.
+
+The system contains **9 core entities**:
+
+| Table        | Description                             |
+| ------------ | --------------------------------------- |
+| `USERS`      | Internal staff authentication and roles |
+| `CUSTOMER`   | End-customer information                |
+| `SUPPLIER`   | Product supplier information            |
+| `CATEGORY`   | Product categories                      |
+| `PRODUCT`    | Product catalog                         |
+| `INVENTORY`  | Warehouse inventory and stock           |
+| `ORDERS`     | Customer orders                         |
+| `ORDER_ITEM` | Products contained in each order        |
+| `PAYMENT`    | Payment transactions                    |
+
+### Database Relationships
+
+```text
+CUSTOMER
+   │
+   │ places
+   ▼
+ ORDERS
+   │
+   │ contains
+   ▼
+ORDER_ITEM ───────────► PRODUCT
+                          │
+                          │ belongs to
+                          ▼
+                      CATEGORY
+                          │
+                          │ supplied by
+                          ▼
+                       SUPPLIER
+
+PRODUCT ───────────────► INVENTORY
+
+ORDERS ────────────────► PAYMENT
+
+USERS
+ │
+ └── Internal system staff
+     ADMIN / MANAGER / STAFF
 ```
+
+### Database Features
+
+* Primary and foreign key constraints
+* Referential integrity
+* Check constraints
+* Unique constraints
+* Database indexes
+* Oracle triggers
+* Normalized relational structure
+* Automatic inventory updates
+
+### Important Triggers
+
+#### `trg_update_inventory`
+
+Automatically deducts inventory when a new `ORDER_ITEM` is inserted.
+
+#### `trg_users_updated_at`
+
+Automatically updates the `updated_at` timestamp when a user record changes.
+
+### Validation Constraints
+
+Examples include:
+
+* Product price must be `>= 0`
+* Order quantities must be `> 0`
+* Status fields use predefined values
+* Foreign keys enforce relationships between entities
+
+---
+
+# 🔌 API Reference
+
+All entity endpoints require a valid authentication cookie unless otherwise specified.
+
+## Authentication
+
+| Method | Endpoint                 | Authentication | Description                     |
+| ------ | ------------------------ | -------------- | ------------------------------- |
+| `POST` | `/api/auth/signup`       | Public         | Register a staff account        |
+| `POST` | `/api/auth/verify-email` | Public         | Verify 6-digit email code       |
+| `POST` | `/api/auth/resend-email` | Public         | Resend verification code        |
+| `POST` | `/api/auth/login`        | Public         | Authenticate and create session |
+| `POST` | `/api/auth/logout`       | Public         | Clear authentication cookie     |
+| `GET`  | `/api/auth/me`           | Cookie         | Get current authenticated user  |
+
+### Entity Endpoints
+
+| Resource    | Endpoint          | Create         | Read | Update         | Delete         |
+| ----------- | ----------------- | -------------- | ---- | -------------- | -------------- |
+| Customers   | `/api/customers`  | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Suppliers   | `/api/suppliers`  | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Categories  | `/api/categories` | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Products    | `/api/products`   | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Inventory   | `/api/inventory`  | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Orders      | `/api/orders`     | ALL            | ALL  | ALL            | ADMIN, MANAGER |
+| Order Items | `/api/items`      | ALL            | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+| Payments    | `/api/payments`   | ADMIN, MANAGER | ALL  | ADMIN, MANAGER | ADMIN, MANAGER |
+
+> `ALL` = `ADMIN`, `MANAGER`, and `STAFF`
+
+---
+
+# 📁 Project Structure
+
+```text
 E-Commerce Order Management System/
+│
 ├── backend/
 │   ├── scripts/
-│   │   ├── schema.sql          # Oracle DDL (9 tables + triggers + indexes)
-│   │   ├── schema.js           # Schema runner
-│   │   ├── seed.sql            # Sample data + seeded admin user
-│   │   └── seed.js             # Seed runner
+│   │   ├── schema.sql
+│   │   ├── schema.js
+│   │   ├── seed.sql
+│   │   └── seed.js
+│   │
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── database.js     # Oracle connection pool
+│   │   │   └── database.js
+│   │   │
 │   │   ├── controllers/
-│   │   │   ├── auth.js         # Login, signup, verify, resend, logout, me
+│   │   │   ├── auth.js
 │   │   │   ├── category.js
 │   │   │   ├── customer.js
 │   │   │   ├── inventory.js
@@ -109,8 +226,10 @@ E-Commerce Order Management System/
 │   │   │   ├── payment.js
 │   │   │   ├── product.js
 │   │   │   └── supplier.js
+│   │   │
 │   │   ├── middleware/
-│   │   │   └── auth.js         # requireAuth + requireRole
+│   │   │   └── auth.js
+│   │   │
 │   │   ├── models/
 │   │   │   ├── category.js
 │   │   │   ├── customer.js
@@ -120,235 +239,492 @@ E-Commerce Order Management System/
 │   │   │   ├── payment.js
 │   │   │   ├── product.js
 │   │   │   ├── supplier.js
-│   │   │   └── user.js         # Oracle DAL for USERS table
+│   │   │   └── user.js
+│   │   │
 │   │   ├── routes/
-│   │   │   ├── auth.js         # Auth routes
-│   │   │   ├── category.js     # Protected routes
-│   │   │   ├── customer.js     # Protected routes
-│   │   │   ├── inventory.js    # Protected routes
-│   │   │   ├── item.js         # Protected routes
-│   │   │   ├── order.js        # Protected routes
-│   │   │   ├── payment.js      # Protected routes
-│   │   │   ├── product.js      # Protected routes
-│   │   │   └── supplier.js     # Protected routes
+│   │   │   ├── auth.js
+│   │   │   ├── category.js
+│   │   │   ├── customer.js
+│   │   │   ├── inventory.js
+│   │   │   ├── item.js
+│   │   │   ├── order.js
+│   │   │   ├── payment.js
+│   │   │   ├── product.js
+│   │   │   └── supplier.js
+│   │   │
 │   │   ├── utils/
-│   │   │   └── email.js        # Nodemailer Gmail transport
-│   │   └── index.js            # Express app, CORS, cookie-parser, auth mount
+│   │   │   └── email.js
+│   │   │
+│   │   └── index.js
+│   │
 │   ├── .env
 │   ├── package.json
 │   └── package-lock.json
+│
 ├── frontend/
 │   ├── src/
 │   │   ├── api/
-│   │   │   ├── apiService.js   # Axios instance + 40+ endpoints
-│   │   │   └── auth.js         # Auth API wrappers
+│   │   │   ├── apiService.js
+│   │   │   └── auth.js
+│   │   │
 │   │   ├── components/
-│   │   │   ├── DataTable.jsx   # Search, sort, actions
-│   │   │   ├── Header.jsx      # Status indicator
-│   │   │   ├── Layout.jsx      # Sidebar + content wrapper
-│   │   │   ├── Modal.jsx       # Create/Edit dialogs
-│   │   │   ├── ProtectedRoute.jsx # Route guard (auth + role check)
-│   │   │   ├── Sidebar.jsx     # Navigation + user info + logout
-│   │   │   └── StatCard.jsx    # KPI cards
+│   │   │   ├── DataTable.jsx
+│   │   │   ├── Header.jsx
+│   │   │   ├── Layout.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   └── StatCard.jsx
+│   │   │
 │   │   ├── context/
-│   │   │   └── AuthContext.jsx # Global auth state (user, login, logout)
+│   │   │   └── AuthContext.jsx
+│   │   │
 │   │   ├── pages/
-│   │   │   ├── Dashboard.jsx   # Live KPIs + recent orders
+│   │   │   ├── Dashboard.jsx
 │   │   │   ├── Categories.jsx
 │   │   │   ├── Customers.jsx
 │   │   │   ├── Inventory.jsx
-│   │   │   ├── Login.jsx       # Split-layout login page
+│   │   │   ├── Login.jsx
 │   │   │   ├── OrderItems.jsx
 │   │   │   ├── Orders.jsx
 │   │   │   ├── Payments.jsx
 │   │   │   ├── Products.jsx
-│   │   │   ├── Signup.jsx      # Split-layout signup page
+│   │   │   ├── Signup.jsx
 │   │   │   ├── Suppliers.jsx
-│   │   │   └── VerifyEmail.jsx # 6-digit code verification page
+│   │   │   └── VerifyEmail.jsx
+│   │   │
 │   │   ├── styles/
-│   │   │   ├── Auth.css        # Shared auth page styles
+│   │   │   ├── Auth.css
 │   │   │   └── global.css
-│   │   ├── App.jsx             # Router + AuthProvider + route protection
+│   │   │
+│   │   ├── App.jsx
 │   │   └── main.jsx
+│   │
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
-├── docker-compose.yml          # Oracle XE 21c
+│
+├── docker-compose.yml
 ├── .gitignore
 ├── package.json
 └── README.md
 ```
 
-## Quick Start
+---
 
-### Prerequisites
-- Node.js 20+
-- Docker Desktop
-- Gmail account (for email verification)
+# ⚡ Quick Start
 
-### 1. Start Oracle Database
+## Prerequisites
+
+Make sure the following are installed:
+
+* **Node.js 20+**
+* **Docker Desktop**
+* **Git**
+* Gmail account with an **App Password** for email verification
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd "E-Commerce Order Management System"
+```
+
+---
+
+## 2. Start Oracle Database
+
 ```bash
 docker-compose up -d
 ```
 
-> If port 1521 is occupied by a local Oracle listener, either stop the local service (`Stop-Process -Id (Get-NetTCPConnection -LocalPort 1521).OwningProcess -Force`) or change the port mapping in `docker-compose.yml` to `"1522:1521"` and update `DB_CONNECTION_STRING` accordingly.
+The project uses **Oracle Database 21c XE** through Docker.
 
-### 2. Initialize Database
-```bash
-cd backend
-node scripts/schema.js   # Creates all 9 tables + triggers + indexes
-node scripts/seed.js     # Inserts sample data + pre-verified admin user
+### Port Conflict
+
+If port `1521` is already being used by another Oracle installation, either stop the local Oracle service or change the Docker mapping:
+
+```yaml
+ports:
+  - "1522:1521"
 ```
 
-### 3. Configure Environment
+Then update:
 
-**`backend/.env`**
+```env
+DB_CONNECTION_STRING=localhost:1522/XEPDB1
+```
+
+---
+
+## 3. Install Backend Dependencies
+
+```bash
+cd backend
+npm install
+```
+
+If required dependencies are missing:
+
+```bash
+npm install jsonwebtoken bcrypt cookie-parser nodemailer
+```
+
+---
+
+## 4. Configure Backend Environment
+
+Create:
+
+```text
+backend/.env
+```
+
+Add:
+
 ```env
 PORT=3001
 NODE_ENV=development
+
 DB_USER=ecommerce_user
 DB_PASSWORD=ecommerce_pass
 DB_CONNECTION_STRING=localhost:1521/XEPDB1
+
 FRONTEND_URL=http://localhost:5173
+
 JWT_SECRET=your-super-secret-jwt-key-change-this
+
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-gmail-app-password
 ```
 
-**`frontend/.env`**
-```env
-VITE_API_URL=http://localhost:3001/api
-```
+> Never commit `.env` files or production credentials to GitHub.
 
-### 4. Install Dependencies
+---
+
+## 5. Initialize the Database
+
+From the `backend` directory:
 
 ```bash
-# Backend
-cd backend
-npm install
+node scripts/schema.js
+```
 
-# Frontend
+This creates the database tables, constraints, triggers, and indexes.
+
+Then run:
+
+```bash
+node scripts/seed.js
+```
+
+This inserts sample data and creates the pre-verified administrator account.
+
+---
+
+## 6. Install Frontend Dependencies
+
+```bash
 cd ../frontend
 npm install
 ```
 
-> The backend requires `jsonwebtoken`, `bcrypt`, `cookie-parser`, and `nodemailer`. If any are missing, run:
-> ```bash
-> cd backend && npm install jsonwebtoken bcrypt cookie-parser nodemailer
-> ```
+Create:
 
-### 5. Start Backend
+```text
+frontend/.env
+```
+
+Add:
+
+```env
+VITE_API_URL=http://localhost:3001/api
+```
+
+---
+
+## 7. Start the Backend
+
 ```bash
-cd backend
+cd ../backend
 npm run dev
 ```
 
-### 6. Start Frontend
+The backend runs on:
+
+```text
+http://localhost:3001
+```
+
+---
+
+## 8. Start the Frontend
+
+Open another terminal:
+
 ```bash
 cd frontend
 npm run dev
 ```
 
-### 7. Open App
-Navigate to `http://localhost:5173`
+The frontend runs on:
 
-You will be redirected to `/login`. Use the seeded admin account below, or sign up as a new staff member.
+```text
+http://localhost:5173
+```
 
-## Seeded Admin Account
+---
 
-The seed script creates a pre-verified admin user so you can log in immediately without email setup:
+## 9. Open the Application
 
-| Field | Value                |
-|-------|----------------------|
-| **Email** | `root@gmail.com`     |
-| **Password** | `admin123`           |
-| **Username** | `admin`              |
-| **Role** | `ADMIN`              |
-| **Status** | Pre-verified, active |
+Navigate to:
 
-> In production, replace this with a real email address and rotate the password.
+```text
+http://localhost:5173
+```
 
-## Environment Variables
+You will be redirected to the login page.
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `PORT` | Yes | Express server port |
-| `DB_USER` | Yes | Oracle username |
-| `DB_PASSWORD` | Yes | Oracle password |
-| `DB_CONNECTION_STRING` | Yes | Oracle host:port/service |
-| `FRONTEND_URL` | Yes | CORS origin (e.g. `http://localhost:5173`) |
-| `JWT_SECRET` | Yes | JWT signing key (min 32 chars) |
-| `EMAIL_USER` | Yes | Gmail address for verification emails |
-| `EMAIL_PASS` | Yes | Gmail app password (not your login password) |
-| `NODE_ENV` | No | `development` or `production` |
+You can either:
 
-## Auth Flow
+* Use the seeded administrator account, or
+* Create a new staff account and verify the email address.
+
+---
+
+# 👤 Seeded Administrator
+
+The database seed script creates a pre-verified administrator account.
+
+| Field        | Value                 |
+| ------------ | --------------------- |
+| **Email**    | `root@gmail.com`      |
+| **Password** | `admin123`            |
+| **Username** | `admin`               |
+| **Role**     | `ADMIN`               |
+| **Status**   | Active / Pre-verified |
+
+> ⚠️ **Security:** This account is intended for development/demo purposes. Change or remove the credentials before deploying the application to production.
+
+---
+
+# 🔑 Environment Variables
+
+## Backend
+
+| Variable               | Required | Description                         |
+| ---------------------- | -------- | ----------------------------------- |
+| `PORT`                 | Yes      | Express server port                 |
+| `NODE_ENV`             | Yes      | Application environment             |
+| `DB_USER`              | Yes      | Oracle database username            |
+| `DB_PASSWORD`          | Yes      | Oracle database password            |
+| `DB_CONNECTION_STRING` | Yes      | Oracle host, port, and service      |
+| `FRONTEND_URL`         | Yes      | Allowed frontend origin             |
+| `JWT_SECRET`           | Yes      | Secret used to sign JWTs            |
+| `EMAIL_USER`           | Yes      | Gmail account used for verification |
+| `EMAIL_PASS`           | Yes      | Gmail App Password                  |
+
+## Frontend
+
+| Variable       | Required | Description          |
+| -------------- | -------- | -------------------- |
+| `VITE_API_URL` | Yes      | Backend API base URL |
+
+---
+
+# 🔐 Authentication Flow
+
+The authentication system follows this flow:
+
+```text
+┌──────────┐
+│  Client  │
+└────┬─────┘
+     │
+     │ Signup
+     ▼
+┌──────────┐
+│ Backend  │
+└────┬─────┘
+     │
+     │ Generate verification code
+     ▼
+┌──────────┐
+│  Gmail   │
+└────┬─────┘
+     │
+     │ Verification email
+     ▼
+┌──────────┐
+│  Client  │
+└────┬─────┘
+     │
+     │ Verify 6-digit code
+     ▼
+┌──────────┐
+│ Backend  │
+└────┬─────┘
+     │
+     │ Login
+     ▼
+┌──────────────────┐
+│ httpOnly Cookie  │
+│   oms_session    │
+└────────┬─────────┘
+         │
+         │ Authenticated API requests
+         ▼
+┌──────────────────┐
+│ Protected APIs   │
+└──────────────────┘
+```
+
+### Frontend Authentication Flow
+
+```text
+/signup
+   │
+   ▼
+/verify-email
+   │
+   ▼
+/login
+   │
+   ▼
+/dashboard
+   │
+   ├── Customers
+   ├── Suppliers
+   ├── Categories
+   ├── Products
+   ├── Inventory
+   ├── Orders
+   ├── Order Items
+   └── Payments
+```
+
+### Security Model
+
+* Passwords are hashed using bcrypt
+* Authentication uses JWTs
+* JWTs are stored in `httpOnly` cookies
+* Protected API routes use authentication middleware
+* Role permissions are enforced on the backend
+* Frontend protected routes prevent unauthorized navigation
+* Axios sends credentials using `withCredentials: true`
+
+---
+
+# 📜 Available Scripts
+
+### Database
+
+```bash
+docker-compose up -d
+```
+
+Starts the Oracle database container.
+
+```bash
+node scripts/schema.js
+```
+
+Drops and recreates the database schema.
+
+```bash
+node scripts/seed.js
+```
+
+Inserts sample data and the seeded administrator.
 
 ### Backend
+
+```bash
+npm run dev
 ```
-┌─────────┐    signup     ┌──────────┐    send email    ┌─────────┐
-│  Client │ ─────────────→│  Backend │ ────────────────→│  Gmail  │
-└─────────┘               └──────────┘                  └─────────┘
-     │                         │                            │
-     │    6-digit code         │                            │
-     │ ←───────────────────────│←───────────────────────────│
-     │                         │                            │
-     │    verify-email         │                            │
-     │ ───────────────────────→│                            │
-     │                         │                            │
-     │    login                │                            │
-     │ ───────────────────────→│                            │
-     │                         │                            │
-     │    httpOnly cookie      │                            │
-     │ ←───────────────────────│                            │
-     │                         │                            │
-     │    /api/orders (cookie) │                            │
-     │ ───────────────────────→│                            │
-```
+
+Starts the Express development server.
 
 ### Frontend
+
+```bash
+npm run dev
 ```
-/unauthenticated → /login ──→ /signup ──→ /verify-email ──→ /login ──→ / (Dashboard)
-                     ↑                                                    │
-                     └──────────────── /logout ←──────────────────────────┘
-```
 
-- Unauthenticated users hitting any app route are redirected to `/login`
-- After successful login, users are redirected to their originally requested page (or Dashboard)
-- The sidebar displays the current user's name, role, and a logout button
-- All Axios requests include `withCredentials: true` to send the `oms_session` cookie
+Starts the Vite development server.
 
-## Scripts
+---
 
-| Command | Description |
-|---------|-------------|
-| `docker-compose up -d` | Start Oracle container |
-| `node scripts/schema.js` | Drop & recreate all tables |
-| `node scripts/seed.js` | Insert test data + admin user |
-| `npm run dev` (backend) | Start Express dev server |
-| `npm run dev` (frontend) | Start Vite dev server |
+# 🧪 Troubleshooting
 
-## Troubleshooting
+| Problem                                                            | Solution                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Port `1521` already in use                                         | Stop the local Oracle listener or map Docker to `1522:1521`     |
+| Missing `jsonwebtoken`, `bcrypt`, `nodemailer`, or `cookie-parser` | Run `npm install` or install the packages manually              |
+| CORS errors                                                        | Verify `FRONTEND_URL` matches the frontend URL                  |
+| Authentication cookie not sent                                     | Verify Axios uses `withCredentials: true`                       |
+| Oracle connection failure                                          | Check Docker container status and database connection settings  |
+| Email verification not received                                    | Verify Gmail credentials and App Password                       |
+| `ORA-01408` duplicate index                                        | Oracle may already have an index created by a unique constraint |
+| `PLS-00103` near `/` in seed script                                | Remove the trailing `/` after the PL/SQL block                  |
+| Database tables missing                                            | Run `node scripts/schema.js` followed by `node scripts/seed.js` |
 
-| Issue | Solution |
-|-------|----------|
-| Port 1521 already in use | Stop local Oracle listener or map Docker to `1522:1521` |
-| `ERR_MODULE_NOT_FOUND` for `jsonwebtoken` / `bcrypt` / `nodemailer` / `cookie-parser` | Run `npm install jsonwebtoken bcrypt cookie-parser nodemailer` in `backend/` |
-| CORS errors in browser | Ensure `FRONTEND_URL` in backend `.env` matches your Vite dev server URL |
-| Cookie not sent with API calls | Verify `withCredentials: true` in `apiService.js` and `credentials: true` in backend CORS |
-| `ORA-01408: such column list already indexed` | Harmless — Oracle auto-indexes `UNIQUE` columns; explicit `CREATE INDEX` is redundant |
-| Seed fails with `PLS-00103: Encountered the symbol "/"` | Remove the trailing `/` from `seed.sql` after `END;` |
-| Email verification code not received | Check backend console for send errors; ensure `EMAIL_USER` and `EMAIL_PASS` are set |
+---
 
-## Team Roles (Capstone)
+# 👥 Capstone Team Responsibilities
 
-| Role | Responsibility |
-|------|---------------|
-| Database Architect | Oracle schema design, normalization, triggers |
-| Backend Developer | Express REST API, Oracle models, auth system |
-| Frontend Developer | React UI, Axios integration, dashboard, auth pages |
-| DevOps | Docker setup, environment config, deployment |
+| Role                   | Responsibilities                                                     |
+| ---------------------- | -------------------------------------------------------------------- |
+| **Database Architect** | Database design, normalization, relationships, constraints, triggers |
+| **Backend Developer**  | REST API, Oracle integration, authentication, authorization          |
+| **Frontend Developer** | React interface, routing, API integration, dashboard                 |
+| **DevOps**             | Docker configuration, environment management, development setup      |
 
-## License
+---
 
-Capstone Project — Academic Use Only
+# 🎯 Project Objectives
+
+The system was designed to demonstrate practical implementation of:
+
+* Relational database design
+* Database normalization
+* SQL and PL/SQL
+* Oracle triggers and constraints
+* RESTful API development
+* Authentication and authorization
+* Role-Based Access Control
+* Full-stack web development
+* Frontend/backend integration
+* Docker-based database deployment
+* Secure session management
+* CRUD application architecture
+
+---
+
+# 🔮 Future Improvements
+
+Potential future enhancements include:
+
+* Advanced reporting and analytics
+* Sales charts and revenue analysis
+* PDF invoice generation
+* Automated order notifications
+* Password reset functionality
+* Product image management
+* Advanced inventory alerts
+* Audit logging
+* Pagination and server-side filtering
+* Automated testing
+* CI/CD pipeline
+* Production deployment
+* Payment gateway integration
+
+---
+
+# 📄 License
+
+**Capstone Project — Academic Use Only**
+
+Developed for educational and academic purposes.
