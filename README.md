@@ -1,42 +1,85 @@
 # E-Commerce Order Management System
 
-A full-stack **E-Commerce Order Management System** developed as a capstone project. The system manages the complete order lifecycle, including staff authentication, customer management, product cataloging, inventory control, order processing, and payment tracking.
+A full-stack **E-Commerce Order Management System** built as a capstone project to demonstrate the design and development of a production-style business application.
 
-The application combines a **React frontend**, **Node.js/Express backend**, and **Oracle Database 21c XE**, with Docker used for local database deployment.
+The system manages the complete order lifecycle—from customer and product management to inventory, order processing, payments, authentication, and role-based access control.
+
+Built with **React, Node.js, Express, and Oracle Database 21c XE**, with Docker used to simplify local Oracle database deployment.
 
 ---
 
-## 🚀 Features
+## 📌 Overview
 
-### 📦 Order Management
+The E-Commerce Order Management System provides a centralized platform for managing the core operations of an e-commerce business.
+
+It includes:
 
 * Customer and supplier management
-* Product catalog and category management
+* Product and category management
+* Inventory management
+* Order processing
+* Order item management
+* Payment tracking
+* Staff authentication
+* Email verification
+* Role-based access control
+* Business analytics dashboard
+
+The project demonstrates how a relational database can be integrated with a modern full-stack web application while maintaining data integrity, authentication, and authorization.
+
+---
+
+# ✨ Features
+
+## 📦 Order & Business Management
+
+* Customer management
+* Supplier management
+* Product catalog management
+* Product category management
 * SKU and pricing management
 * Real-time inventory tracking
 * Automatic inventory deduction when order items are created
-* Complete order lifecycle management:
-
-  * `PENDING`
-  * `CONFIRMED`
-  * `SHIPPED`
-  * `DELIVERED`
-  * `CANCELLED`
+* Complete order lifecycle management
 * Order item management
-* Payment tracking by order
+* Payment tracking
 * Payment method and payment status management
 
-### 🔐 Authentication & Authorization
+### Order Statuses
 
-* Staff registration and authentication
+```text
+PENDING
+   ↓
+CONFIRMED
+   ↓
+SHIPPED
+   ↓
+DELIVERED
+```
+
+Orders can also be:
+
+```text
+CANCELLED
+```
+
+---
+
+## 🔐 Authentication & Authorization
+
+The system includes a complete staff authentication system.
+
+* Staff registration
 * JWT-based authentication
 * Secure `httpOnly` session cookies
-* Email verification using 6-digit verification codes
-* Gmail SMTP integration through Nodemailer
+* Six-digit email verification
+* Gmail SMTP integration using Nodemailer
 * Password hashing with bcrypt
 * Role-Based Access Control (RBAC)
+* Protected API routes
+* Protected frontend routes
 
-#### Staff Roles
+### Staff Roles
 
 | Role        | Permissions                                            |
 | ----------- | ------------------------------------------------------ |
@@ -44,11 +87,15 @@ The application combines a **React frontend**, **Node.js/Express backend**, and 
 | **MANAGER** | Full CRUD access to business entities                  |
 | **STAFF**   | Read access to business data and order creation/update |
 
-All protected API routes require authentication and enforce role-based permissions.
+Authorization is enforced on the backend, ensuring that users cannot bypass role restrictions by directly calling API endpoints.
 
-### 📊 Dashboard
+---
 
-The dashboard provides an overview of the system through live KPIs:
+# 📊 Dashboard
+
+The dashboard provides a centralized overview of the business through key performance indicators.
+
+### Dashboard Metrics
 
 * Total orders
 * Revenue
@@ -58,87 +105,98 @@ The dashboard provides an overview of the system through live KPIs:
 * Recent orders
 * Inventory status
 
-### 🖥️ Frontend
+This gives staff a quick overview of the current state of the business without having to navigate through individual modules.
 
-* React 19
-* Responsive dashboard layout
+---
+
+# 🖥️ Frontend
+
+The frontend is built with **React 19** and provides a responsive management interface.
+
+### Frontend capabilities
+
+* Responsive dashboard
 * Protected routes
 * Role-based navigation
 * Search and sorting
 * CRUD interfaces
 * Modal-based forms
 * Authentication pages
-* Email verification page
-* Data normalization between Oracle and JavaScript naming conventions
+* Email verification
+* API integration
+* Oracle-to-JavaScript data normalization
 
 ---
 
-## 🛠️ Tech Stack
+# 🛠️ Technology Stack
 
-| Layer                | Technology                              |
-| -------------------- | --------------------------------------- |
-| **Frontend**         | React 19, Vite 8, Axios, React Router 6 |
-| **Backend**          | Node.js 20, Express 4, oracledb         |
-| **Database**         | Oracle Database 21c XE                  |
-| **Authentication**   | JWT, httpOnly Cookies, bcrypt           |
-| **Email**            | Nodemailer, Gmail SMTP                  |
-| **Database Hosting** | Docker                                  |
-| **Development**      | Docker Compose                          |
+| Layer                   | Technology                              |
+| ----------------------- | --------------------------------------- |
+| **Frontend**            | React 19, Vite 8, Axios, React Router 6 |
+| **Backend**             | Node.js 20, Express 4, oracledb         |
+| **Database**            | Oracle Database 21c XE                  |
+| **Authentication**      | JWT, httpOnly Cookies, bcrypt           |
+| **Email**               | Nodemailer, Gmail SMTP                  |
+| **Database Deployment** | Docker                                  |
+| **Development**         | Docker Compose                          |
 
 ---
 
-# 🗄️ Database Design
+# 🗄️ Database Architecture
 
-The database follows a **normalized relational design in Third Normal Form (3NF)**.
+The application uses a **normalized relational database design following Third Normal Form (3NF)**.
 
-The system contains **9 core entities**:
+The database consists of **9 core entities**:
 
-| Table        | Description                             |
-| ------------ | --------------------------------------- |
-| `USERS`      | Internal staff authentication and roles |
-| `CUSTOMER`   | End-customer information                |
-| `SUPPLIER`   | Product supplier information            |
-| `CATEGORY`   | Product categories                      |
-| `PRODUCT`    | Product catalog                         |
-| `INVENTORY`  | Warehouse inventory and stock           |
-| `ORDERS`     | Customer orders                         |
-| `ORDER_ITEM` | Products contained in each order        |
-| `PAYMENT`    | Payment transactions                    |
+| Table        | Purpose                                            |
+| ------------ | -------------------------------------------------- |
+| `USERS`      | Internal staff accounts, authentication, and roles |
+| `CUSTOMER`   | Customer information                               |
+| `SUPPLIER`   | Supplier information                               |
+| `CATEGORY`   | Product categories                                 |
+| `PRODUCT`    | Product catalog                                    |
+| `INVENTORY`  | Warehouse stock and inventory                      |
+| `ORDERS`     | Customer orders                                    |
+| `ORDER_ITEM` | Products belonging to orders                       |
+| `PAYMENT`    | Payment transactions                               |
 
-### Database Relationships
+## Entity Relationships
 
 ```text
 CUSTOMER
-   │
-   │ places
-   ▼
+    │
+    │ places
+    ▼
  ORDERS
-   │
-   │ contains
-   ▼
+    │
+    │ contains
+    ▼
 ORDER_ITEM ───────────► PRODUCT
-                          │
-                          │ belongs to
-                          ▼
-                      CATEGORY
-                          │
-                          │ supplied by
-                          ▼
-                       SUPPLIER
+                           │
+                           │ belongs to
+                           ▼
+                       CATEGORY
+                           │
+                           │ supplied by
+                           ▼
+                        SUPPLIER
 
 PRODUCT ───────────────► INVENTORY
 
 ORDERS ────────────────► PAYMENT
 
 USERS
- │
- └── Internal system staff
-     ADMIN / MANAGER / STAFF
+  │
+  └── Internal Staff
+       ├── ADMIN
+       ├── MANAGER
+       └── STAFF
 ```
 
-### Database Features
+## Database Features
 
-* Primary and foreign key constraints
+* Primary key constraints
+* Foreign key constraints
 * Referential integrity
 * Check constraints
 * Unique constraints
@@ -155,35 +213,35 @@ Automatically deducts inventory when a new `ORDER_ITEM` is inserted.
 
 #### `trg_users_updated_at`
 
-Automatically updates the `updated_at` timestamp when a user record changes.
+Automatically updates the `updated_at` timestamp whenever a user record is modified.
 
-### Validation Constraints
+### Validation Rules
 
-Examples include:
+Examples of database-level validation include:
 
-* Product price must be `>= 0`
-* Order quantities must be `> 0`
+* Product price must be greater than or equal to `0`
+* Order quantities must be greater than `0`
 * Status fields use predefined values
 * Foreign keys enforce relationships between entities
 
 ---
 
-# 🔌 API Reference
+# 🔌 REST API
 
-All entity endpoints require a valid authentication cookie unless otherwise specified.
+All business entity endpoints require an authenticated session unless explicitly stated otherwise.
 
-## Authentication
+## Authentication Endpoints
 
-| Method | Endpoint                 | Authentication | Description                     |
-| ------ | ------------------------ | -------------- | ------------------------------- |
-| `POST` | `/api/auth/signup`       | Public         | Register a staff account        |
-| `POST` | `/api/auth/verify-email` | Public         | Verify 6-digit email code       |
-| `POST` | `/api/auth/resend-email` | Public         | Resend verification code        |
-| `POST` | `/api/auth/login`        | Public         | Authenticate and create session |
-| `POST` | `/api/auth/logout`       | Public         | Clear authentication cookie     |
-| `GET`  | `/api/auth/me`           | Cookie         | Get current authenticated user  |
+| Method | Endpoint                 | Access        | Description                     |
+| ------ | ------------------------ | ------------- | ------------------------------- |
+| `POST` | `/api/auth/signup`       | Public        | Register a staff account        |
+| `POST` | `/api/auth/verify-email` | Public        | Verify six-digit email code     |
+| `POST` | `/api/auth/resend-email` | Public        | Resend verification code        |
+| `POST` | `/api/auth/login`        | Public        | Authenticate and create session |
+| `POST` | `/api/auth/logout`       | Public        | Clear authentication cookie     |
+| `GET`  | `/api/auth/me`           | Authenticated | Get current user                |
 
-### Entity Endpoints
+## Entity Endpoints
 
 | Resource    | Endpoint          | Create         | Read | Update         | Delete         |
 | ----------- | ----------------- | -------------- | ---- | -------------- | -------------- |
@@ -312,16 +370,16 @@ E-Commerce Order Management System/
 
 ---
 
-# ⚡ Quick Start
+# ⚡ Getting Started
 
 ## Prerequisites
 
-Make sure the following are installed:
+Install the following before starting:
 
 * **Node.js 20+**
 * **Docker Desktop**
 * **Git**
-* Gmail account with an **App Password** for email verification
+* A Gmail account with a **Gmail App Password**
 
 ---
 
@@ -336,22 +394,24 @@ cd "E-Commerce Order Management System"
 
 ## 2. Start Oracle Database
 
+Start the Oracle Database container:
+
 ```bash
 docker-compose up -d
 ```
 
-The project uses **Oracle Database 21c XE** through Docker.
+The project uses **Oracle Database 21c XE** running through Docker.
 
 ### Port Conflict
 
-If port `1521` is already being used by another Oracle installation, either stop the local Oracle service or change the Docker mapping:
+If port `1521` is already being used, either stop the existing Oracle service or change the Docker port mapping:
 
 ```yaml
 ports:
   - "1522:1521"
 ```
 
-Then update:
+Then update the backend connection string:
 
 ```env
 DB_CONNECTION_STRING=localhost:1522/XEPDB1
@@ -366,7 +426,7 @@ cd backend
 npm install
 ```
 
-If required dependencies are missing:
+If required packages are missing:
 
 ```bash
 npm install jsonwebtoken bcrypt cookie-parser nodemailer
@@ -400,7 +460,7 @@ EMAIL_USER=your-email@gmail.com
 EMAIL_PASS=your-gmail-app-password
 ```
 
-> Never commit `.env` files or production credentials to GitHub.
+> **Security:** Never commit `.env` files, JWT secrets, Gmail credentials, or other production secrets to GitHub.
 
 ---
 
@@ -412,9 +472,15 @@ From the `backend` directory:
 node scripts/schema.js
 ```
 
-This creates the database tables, constraints, triggers, and indexes.
+This creates the database schema, including:
 
-Then run:
+* Tables
+* Constraints
+* Indexes
+* Triggers
+* Relationships
+
+Then populate the database:
 
 ```bash
 node scripts/seed.js
@@ -447,12 +513,14 @@ VITE_API_URL=http://localhost:3001/api
 
 ## 7. Start the Backend
 
+From the backend directory:
+
 ```bash
 cd ../backend
 npm run dev
 ```
 
-The backend runs on:
+The backend will run at:
 
 ```text
 http://localhost:3001
@@ -469,7 +537,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend runs on:
+The frontend will run at:
 
 ```text
 http://localhost:5173
@@ -479,7 +547,7 @@ http://localhost:5173
 
 ## 9. Open the Application
 
-Navigate to:
+Open:
 
 ```text
 http://localhost:5173
@@ -489,12 +557,12 @@ You will be redirected to the login page.
 
 You can either:
 
-* Use the seeded administrator account, or
-* Create a new staff account and verify the email address.
+1. Use the seeded administrator account, or
+2. Create a new staff account and complete email verification.
 
 ---
 
-# 👤 Seeded Administrator
+# 👤 Development Administrator
 
 The database seed script creates a pre-verified administrator account.
 
@@ -506,7 +574,7 @@ The database seed script creates a pre-verified administrator account.
 | **Role**     | `ADMIN`               |
 | **Status**   | Active / Pre-verified |
 
-> ⚠️ **Security:** This account is intended for development/demo purposes. Change or remove the credentials before deploying the application to production.
+> ⚠️ **Important:** These credentials are intended only for development/demo purposes. Change or remove them before deploying the application to production.
 
 ---
 
@@ -534,54 +602,54 @@ The database seed script creates a pre-verified administrator account.
 
 ---
 
-# 🔐 Authentication Flow
+# 🔐 Authentication Architecture
 
-The authentication system follows this flow:
+The authentication system follows a multi-step verification and session flow.
 
 ```text
-┌──────────┐
-│  Client  │
-└────┬─────┘
-     │
-     │ Signup
-     ▼
-┌──────────┐
-│ Backend  │
-└────┬─────┘
-     │
-     │ Generate verification code
-     ▼
-┌──────────┐
-│  Gmail   │
-└────┬─────┘
-     │
-     │ Verification email
-     ▼
-┌──────────┐
-│  Client  │
-└────┬─────┘
-     │
-     │ Verify 6-digit code
-     ▼
-┌──────────┐
-│ Backend  │
-└────┬─────┘
-     │
-     │ Login
-     ▼
-┌──────────────────┐
-│ httpOnly Cookie  │
-│   oms_session    │
-└────────┬─────────┘
-         │
-         │ Authenticated API requests
-         ▼
-┌──────────────────┐
-│ Protected APIs   │
-└──────────────────┘
+┌──────────────┐
+│    Client    │
+└──────┬───────┘
+       │
+       │ Signup
+       ▼
+┌──────────────┐
+│   Backend    │
+└──────┬───────┘
+       │
+       │ Generate verification code
+       ▼
+┌──────────────┐
+│    Gmail     │
+└──────┬───────┘
+       │
+       │ Verification email
+       ▼
+┌──────────────┐
+│    Client    │
+└──────┬───────┘
+       │
+       │ Verify 6-digit code
+       ▼
+┌──────────────┐
+│   Backend    │
+└──────┬───────┘
+       │
+       │ Login
+       ▼
+┌────────────────────┐
+│  httpOnly Cookie   │
+│    oms_session     │
+└─────────┬──────────┘
+          │
+          │ Authenticated requests
+          ▼
+┌────────────────────┐
+│   Protected APIs   │
+└────────────────────┘
 ```
 
-### Frontend Authentication Flow
+### Frontend Flow
 
 ```text
 /signup
@@ -611,82 +679,82 @@ The authentication system follows this flow:
 * Authentication uses JWTs
 * JWTs are stored in `httpOnly` cookies
 * Protected API routes use authentication middleware
-* Role permissions are enforced on the backend
+* Backend routes enforce role permissions
 * Frontend protected routes prevent unauthorized navigation
-* Axios sends credentials using `withCredentials: true`
+* Axios sends authentication cookies using `withCredentials: true`
 
 ---
 
-# 📜 Available Scripts
+# 📜 Available Commands
 
-### Database
+## Database
+
+Start Oracle:
 
 ```bash
 docker-compose up -d
 ```
 
-Starts the Oracle database container.
+Create/recreate the schema:
 
 ```bash
 node scripts/schema.js
 ```
 
-Drops and recreates the database schema.
+Seed sample data:
 
 ```bash
 node scripts/seed.js
 ```
 
-Inserts sample data and the seeded administrator.
+## Backend
 
-### Backend
-
-```bash
-npm run dev
-```
-
-Starts the Express development server.
-
-### Frontend
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Starts the Vite development server.
+## Frontend
+
+Start the Vite development server:
+
+```bash
+npm run dev
+```
 
 ---
 
 # 🧪 Troubleshooting
 
-| Problem                                                            | Solution                                                        |
-| ------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Port `1521` already in use                                         | Stop the local Oracle listener or map Docker to `1522:1521`     |
-| Missing `jsonwebtoken`, `bcrypt`, `nodemailer`, or `cookie-parser` | Run `npm install` or install the packages manually              |
-| CORS errors                                                        | Verify `FRONTEND_URL` matches the frontend URL                  |
-| Authentication cookie not sent                                     | Verify Axios uses `withCredentials: true`                       |
-| Oracle connection failure                                          | Check Docker container status and database connection settings  |
-| Email verification not received                                    | Verify Gmail credentials and App Password                       |
-| `ORA-01408` duplicate index                                        | Oracle may already have an index created by a unique constraint |
-| `PLS-00103` near `/` in seed script                                | Remove the trailing `/` after the PL/SQL block                  |
-| Database tables missing                                            | Run `node scripts/schema.js` followed by `node scripts/seed.js` |
+| Problem                             | Solution                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------- |
+| Port `1521` already in use          | Stop the local Oracle listener or map Docker to `1522:1521`               |
+| Missing dependencies                | Run `npm install` or install the required packages manually               |
+| CORS errors                         | Verify `FRONTEND_URL` matches the frontend URL                            |
+| Authentication cookie not sent      | Verify Axios uses `withCredentials: true`                                 |
+| Oracle connection failure           | Check Docker status and database connection settings                      |
+| Email verification not received     | Verify Gmail credentials and App Password                                 |
+| `ORA-01408` duplicate index         | Check whether Oracle already created an index through a unique constraint |
+| `PLS-00103` near `/` in seed script | Remove the trailing `/` after the PL/SQL block                            |
+| Database tables missing             | Run `node scripts/schema.js` followed by `node scripts/seed.js`           |
 
 ---
 
-# 👥 Capstone Team Responsibilities
+# 👥 Team Responsibilities
 
-| Role                   | Responsibilities                                                     |
-| ---------------------- | -------------------------------------------------------------------- |
-| **Database Architect** | Database design, normalization, relationships, constraints, triggers |
-| **Backend Developer**  | REST API, Oracle integration, authentication, authorization          |
-| **Frontend Developer** | React interface, routing, API integration, dashboard                 |
-| **DevOps**             | Docker configuration, environment management, development setup      |
+| Role                   | Responsibilities                                                         |
+| ---------------------- | ------------------------------------------------------------------------ |
+| **Database Architect** | Database design, normalization, relationships, constraints, and triggers |
+| **Backend Developer**  | REST API, Oracle integration, authentication, and authorization          |
+| **Frontend Developer** | React interface, routing, API integration, and dashboard                 |
+| **DevOps**             | Docker configuration, environment management, and development setup      |
 
 ---
 
-# 🎯 Project Objectives
+# 🎯 Learning Objectives
 
-The system was designed to demonstrate practical implementation of:
+This capstone project demonstrates practical implementation of:
 
 * Relational database design
 * Database normalization
@@ -703,12 +771,12 @@ The system was designed to demonstrate practical implementation of:
 
 ---
 
-# 🔮 Future Improvements
+# 🚀 Future Improvements
 
-Potential future enhancements include:
+Potential improvements include:
 
 * Advanced reporting and analytics
-* Sales charts and revenue analysis
+* Sales and revenue charts
 * PDF invoice generation
 * Automated order notifications
 * Password reset functionality
