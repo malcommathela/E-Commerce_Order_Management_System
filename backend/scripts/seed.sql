@@ -8,6 +8,7 @@
 
 DECLARE
     v_existing_admin NUMBER;
+    v_existing_count NUMBER;
     v_admin_id       NUMBER;
     v_category_id    NUMBER;
     v_supplier_id    NUMBER;
@@ -28,12 +29,13 @@ DECLARE
     v_supplier_name  VARCHAR2(200);
 BEGIN
     SELECT COUNT(*) INTO v_existing_admin
-    FROM USERS
-    WHERE username = 'admin';
+    FROM PRODUCT
+    WHERE sku = 'DEMO-SKU-001';
 
     IF v_existing_admin = 0 THEN
-        -- Development administrator. Change the default credentials before
-        -- any deployment outside a local demo environment.
+        -- Development administrator. Preserve an existing admin user.
+        SELECT COUNT(*) INTO v_existing_count FROM USERS WHERE username = 'admin';
+        IF v_existing_count = 0 THEN
         INSERT INTO USERS (
             username, email, password_hash, first_name, last_name, role,
             email_verified, is_active, last_login_at, created_at, updated_at
@@ -50,6 +52,7 @@ BEGIN
             SYSTIMESTAMP,
             SYSTIMESTAMP
         ) RETURNING user_id INTO v_admin_id;
+        END IF;
 
         -- 1. Categories (10)
         FOR i IN 1..10 LOOP
@@ -66,11 +69,13 @@ BEGIN
                 ELSE 'Accessories'
             END;
 
-            INSERT INTO CATEGORY (name, description)
-            VALUES (
-                v_category_name,
-                'Demo catalogue category: ' || v_category_name
-            );
+            SELECT COUNT(*) INTO v_existing_count
+            FROM CATEGORY WHERE name = v_category_name;
+            IF v_existing_count = 0 THEN
+                INSERT INTO CATEGORY (name, description)
+                VALUES (v_category_name,
+                        'Demo catalogue category: ' || v_category_name);
+            END IF;
         END LOOP;
 
         -- 2. Suppliers (15)
@@ -83,20 +88,25 @@ BEGIN
                 ELSE 'Summit Goods Co'
             END || ' ' || TO_CHAR(i, 'FM00');
 
-            INSERT INTO SUPPLIER (name, contact_email, phone, address)
-            VALUES (
-                v_supplier_name,
-                'supplier' || TO_CHAR(i, 'FM000') || '@example.com',
-                '90000' || TO_CHAR(10000 + i),
-                'Warehouse ' || TO_CHAR(i, 'FM00') || ', ' ||
-                CASE MOD(i - 1, 5)
-                    WHEN 0 THEN 'Mumbai'
-                    WHEN 1 THEN 'Delhi'
-                    WHEN 2 THEN 'Bengaluru'
-                    WHEN 3 THEN 'Hyderabad'
-                    ELSE 'Chennai'
-                END
-            );
+            SELECT COUNT(*) INTO v_existing_count
+            FROM SUPPLIER
+            WHERE contact_email = 'supplier' || TO_CHAR(i, 'FM000') || '@example.com';
+            IF v_existing_count = 0 THEN
+                INSERT INTO SUPPLIER (name, contact_email, phone, address)
+                VALUES (
+                    v_supplier_name,
+                    'supplier' || TO_CHAR(i, 'FM000') || '@example.com',
+                    '90000' || TO_CHAR(10000 + i),
+                    'Warehouse ' || TO_CHAR(i, 'FM00') || ', ' ||
+                    CASE MOD(i - 1, 5)
+                        WHEN 0 THEN 'Mumbai'
+                        WHEN 1 THEN 'Delhi'
+                        WHEN 2 THEN 'Bengaluru'
+                        WHEN 3 THEN 'Hyderabad'
+                        ELSE 'Chennai'
+                    END
+                );
+            END IF;
         END LOOP;
 
         -- 3. Products and inventory (60).
@@ -104,20 +114,18 @@ BEGIN
         -- remain valid throughout the sample order generation.
         FOR i IN 1..60 LOOP
             SELECT category_id INTO v_category_id
-            FROM (
-                SELECT category_id,
-                       ROW_NUMBER() OVER (ORDER BY category_id) AS rn
-                FROM CATEGORY
-            )
-            WHERE rn = MOD(i - 1, 10) + 1;
+            FROM CATEGORY
+            WHERE name = CASE MOD(i - 1, 10)
+                WHEN 0 THEN 'Electronics' WHEN 1 THEN 'Clothing'
+                WHEN 2 THEN 'Home & Kitchen' WHEN 3 THEN 'Books'
+                WHEN 4 THEN 'Sports & Outdoors' WHEN 5 THEN 'Beauty & Personal Care'
+                WHEN 6 THEN 'Toys & Games' WHEN 7 THEN 'Office Supplies'
+                WHEN 8 THEN 'Footwear' ELSE 'Accessories' END
+            FETCH FIRST 1 ROW ONLY;
 
             SELECT supplier_id INTO v_supplier_id
-            FROM (
-                SELECT supplier_id,
-                       ROW_NUMBER() OVER (ORDER BY supplier_id) AS rn
-                FROM SUPPLIER
-            )
-            WHERE rn = MOD(i - 1, 15) + 1;
+            FROM SUPPLIER
+            WHERE contact_email = 'supplier' || TO_CHAR(MOD(i - 1, 15) + 1, 'FM000') || '@example.com';
 
             INSERT INTO PRODUCT (
                 category_id, supplier_id, name, description, price, sku,
@@ -151,6 +159,9 @@ BEGIN
 
         -- 4. Customers (100)
         FOR i IN 1..100 LOOP
+            SELECT COUNT(*) INTO v_existing_count FROM CUSTOMER
+            WHERE email = 'customer' || TO_CHAR(i, 'FM000') || '@example.com';
+            IF v_existing_count = 0 THEN
             INSERT INTO CUSTOMER (
                 first_name, last_name, email, phone, address, city, postal_code
             ) VALUES (
@@ -182,6 +193,7 @@ BEGIN
                 END,
                 TO_CHAR(400000 + MOD(i * 37, 59999))
             );
+            END IF;
         END LOOP;
 
         -- 5. Orders, order items and payments (300 orders / 600 items).
@@ -193,6 +205,7 @@ BEGIN
                 SELECT customer_id,
                        ROW_NUMBER() OVER (ORDER BY customer_id) AS rn
                 FROM CUSTOMER
+                WHERE email LIKE 'customer___@example.com'
             )
             WHERE rn = MOD(i - 1, 100) + 1;
 
@@ -221,6 +234,7 @@ BEGIN
                 SELECT product_id, price,
                        ROW_NUMBER() OVER (ORDER BY product_id) AS rn
                 FROM PRODUCT
+                WHERE sku LIKE 'DEMO-SKU-%'
             )
             WHERE rn = MOD((i * 2) - 2, 60) + 1;
 
@@ -229,6 +243,7 @@ BEGIN
                 SELECT product_id, price,
                        ROW_NUMBER() OVER (ORDER BY product_id) AS rn
                 FROM PRODUCT
+                WHERE sku LIKE 'DEMO-SKU-%'
             )
             WHERE rn = MOD((i * 2) - 1, 60) + 1;
 
@@ -278,8 +293,8 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('300 orders, 600 order items and 300 payments.');
     ELSE
         DBMS_OUTPUT.PUT_LINE(
-            'Seed skipped: username admin already exists. ' ||
-            'Reset the development schema before reseeding.'
+            'Seed skipped: expanded demo products already exist. ' ||
+            'No duplicate expanded dataset was inserted.'
         );
     END IF;
 EXCEPTION
