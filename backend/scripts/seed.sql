@@ -1,544 +1,289 @@
+-- Expanded development seed data for the E-Commerce Order Management System.
+-- Creates 10 categories, 15 suppliers, 60 products, 100 customers,
+-- 300 orders, 600 order items, 300 payments, and one development admin.
+--
+-- Safe re-run guard: if the seed admin already exists, the script skips
+-- the entire seed operation. To reseed, reset the development schema first.
+-- IMPORTANT: Run only against a development database.
+
 DECLARE
--- Customer IDs
-v_cust1 NUMBER;
-    v_cust2 NUMBER;
-    v_cust3 NUMBER;
-
-    -- Supplier IDs
-    v_sup1 NUMBER;
-    v_sup2 NUMBER;
-    v_sup3 NUMBER;
-
-    -- Category IDs
-    v_cat1 NUMBER;
-    v_cat2 NUMBER;
-    v_cat3 NUMBER;
-
-    -- Product IDs
-    v_prod1 NUMBER;
-    v_prod2 NUMBER;
-    v_prod3 NUMBER;
-    v_prod4 NUMBER;
-    v_prod5 NUMBER;
-
-    -- Order IDs
-    v_ord1 NUMBER;
-    v_ord2 NUMBER;
-    v_ord3 NUMBER;
-
-    -- Admin User ID
-    v_admin_id NUMBER;
-
+    v_existing_admin NUMBER;
+    v_admin_id       NUMBER;
+    v_category_id    NUMBER;
+    v_supplier_id    NUMBER;
+    v_product_id     NUMBER;
+    v_customer_id    NUMBER;
+    v_order_id       NUMBER;
+    v_product_id_1   NUMBER;
+    v_product_id_2   NUMBER;
+    v_price_1        NUMBER(10,2);
+    v_price_2        NUMBER(10,2);
+    v_total          NUMBER(12,2);
+    v_customer_count NUMBER;
+    v_product_count  NUMBER;
+    v_order_status   VARCHAR2(50);
+    v_payment_method VARCHAR2(50);
+    v_payment_status VARCHAR2(50);
+    v_category_name  VARCHAR2(100);
+    v_supplier_name  VARCHAR2(200);
 BEGIN
+    SELECT COUNT(*) INTO v_existing_admin
+    FROM USERS
+    WHERE username = 'admin';
 
-    ----------------------------------------------------------------------
-    -- 0. ADMIN USER (pre-verified, active, role = ADMIN)
-    ----------------------------------------------------------------------
+    IF v_existing_admin = 0 THEN
+        -- Development administrator. Change the default credentials before
+        -- any deployment outside a local demo environment.
+        INSERT INTO USERS (
+            username, email, password_hash, first_name, last_name, role,
+            email_verified, is_active, last_login_at, created_at, updated_at
+        ) VALUES (
+            'admin',
+            'root@gmail.com',
+            '$2b$12$39P3LjZcNIce57echsjQ3.Ux/yFwIjVpUsqt73pYHweFUjqNaI8g.',
+            'System',
+            'Administrator',
+            'ADMIN',
+            1,
+            1,
+            SYSTIMESTAMP,
+            SYSTIMESTAMP,
+            SYSTIMESTAMP
+        ) RETURNING user_id INTO v_admin_id;
 
-INSERT INTO USERS (
-    username,
-    email,
-    password_hash,
-    first_name,
-    last_name,
-    role,
-    email_verified,
-    verification_code,
-    verification_expires_at,
-    is_active,
-    last_login_at,
-    created_at,
-    updated_at
-)
-VALUES (
-           'admin',
-           'root@gmail.com',
-           '$2b$12$39P3LjZcNIce57echsjQ3.Ux/yFwIjVpUsqt73pYHweFUjqNaI8g.',
-           'System',
-           'Administrator',
-           'ADMIN',
-           1,
-           NULL,
-           NULL,
-           1,
-           SYSTIMESTAMP,
-           SYSTIMESTAMP,
-           SYSTIMESTAMP
-       )
-    RETURNING user_id INTO v_admin_id;
+        -- 1. Categories (10)
+        FOR i IN 1..10 LOOP
+            v_category_name := CASE i
+                WHEN 1 THEN 'Electronics'
+                WHEN 2 THEN 'Clothing'
+                WHEN 3 THEN 'Home & Kitchen'
+                WHEN 4 THEN 'Books'
+                WHEN 5 THEN 'Sports & Outdoors'
+                WHEN 6 THEN 'Beauty & Personal Care'
+                WHEN 7 THEN 'Toys & Games'
+                WHEN 8 THEN 'Office Supplies'
+                WHEN 9 THEN 'Footwear'
+                ELSE 'Accessories'
+            END;
 
-----------------------------------------------------------------------
--- 1. CATEGORIES
-----------------------------------------------------------------------
+            INSERT INTO CATEGORY (name, description)
+            VALUES (
+                v_category_name,
+                'Demo catalogue category: ' || v_category_name
+            );
+        END LOOP;
 
-INSERT INTO CATEGORY (name, description)
-VALUES (
-           'Electronics',
-           'Gadgets, devices, and accessories'
-       )
-    RETURNING category_id INTO v_cat1;
+        -- 2. Suppliers (15)
+        FOR i IN 1..15 LOOP
+            v_supplier_name := CASE MOD(i - 1, 5)
+                WHEN 0 THEN 'Prime Retail Supply'
+                WHEN 1 THEN 'Metro Wholesale'
+                WHEN 2 THEN 'Value Source Traders'
+                WHEN 3 THEN 'BlueSky Distributors'
+                ELSE 'Summit Goods Co'
+            END || ' ' || TO_CHAR(i, 'FM00');
 
-INSERT INTO CATEGORY (name, description)
-VALUES (
-           'Clothing',
-           'Apparel and fashion accessories'
-       )
-    RETURNING category_id INTO v_cat2;
+            INSERT INTO SUPPLIER (name, contact_email, phone, address)
+            VALUES (
+                v_supplier_name,
+                'supplier' || TO_CHAR(i, 'FM000') || '@example.com',
+                '90000' || TO_CHAR(10000 + i),
+                'Warehouse ' || TO_CHAR(i, 'FM00') || ', ' ||
+                CASE MOD(i - 1, 5)
+                    WHEN 0 THEN 'Mumbai'
+                    WHEN 1 THEN 'Delhi'
+                    WHEN 2 THEN 'Bengaluru'
+                    WHEN 3 THEN 'Hyderabad'
+                    ELSE 'Chennai'
+                END
+            );
+        END LOOP;
 
-INSERT INTO CATEGORY (name, description)
-VALUES (
-           'Home & Kitchen',
-           'Household and kitchen essentials'
-       )
-    RETURNING category_id INTO v_cat3;
+        -- 3. Products and inventory (60).
+        -- Stock is deliberately generous so order-item trigger deductions
+        -- remain valid throughout the sample order generation.
+        FOR i IN 1..60 LOOP
+            SELECT category_id INTO v_category_id
+            FROM (
+                SELECT category_id,
+                       ROW_NUMBER() OVER (ORDER BY category_id) AS rn
+                FROM CATEGORY
+            )
+            WHERE rn = MOD(i - 1, 10) + 1;
 
+            SELECT supplier_id INTO v_supplier_id
+            FROM (
+                SELECT supplier_id,
+                       ROW_NUMBER() OVER (ORDER BY supplier_id) AS rn
+                FROM SUPPLIER
+            )
+            WHERE rn = MOD(i - 1, 15) + 1;
 
-----------------------------------------------------------------------
--- 2. SUPPLIERS
-----------------------------------------------------------------------
+            INSERT INTO PRODUCT (
+                category_id, supplier_id, name, description, price, sku,
+                stock_quantity
+            ) VALUES (
+                v_category_id,
+                v_supplier_id,
+                'Demo Product ' || TO_CHAR(i, 'FM000'),
+                'Seeded catalogue item ' || TO_CHAR(i, 'FM000') ||
+                ' for local development and dashboard testing.',
+                ROUND(99 + MOD(i * 137, 15000) + (MOD(i, 4) * 0.25), 2),
+                'DEMO-SKU-' || TO_CHAR(i, 'FM000'),
+                500
+            ) RETURNING product_id INTO v_product_id;
 
-INSERT INTO SUPPLIER (
-    name,
-    contact_email,
-    phone,
-    address
-)
-VALUES (
-           'TechSource Inc',
-           'contact@techsource.com',
-           '9876543210',
-           'Andheri East, Mumbai'
-       )
-    RETURNING supplier_id INTO v_sup1;
+            INSERT INTO INVENTORY (
+                product_id, warehouse_location, quantity_available
+            ) VALUES (
+                v_product_id,
+                'WH-' ||
+                CASE MOD(i - 1, 5)
+                    WHEN 0 THEN 'MUM'
+                    WHEN 1 THEN 'DEL'
+                    WHEN 2 THEN 'BLR'
+                    WHEN 3 THEN 'HYD'
+                    ELSE 'CHE'
+                END || '-' || TO_CHAR(MOD(i - 1, 20) + 1, 'FM00'),
+                500
+            );
+        END LOOP;
 
-INSERT INTO SUPPLIER (
-    name,
-    contact_email,
-    phone,
-    address
-)
-VALUES (
-           'FashionHub',
-           'hello@fashionhub.com',
-           '9876543211',
-           'Connaught Place, Delhi'
-       )
-    RETURNING supplier_id INTO v_sup2;
+        -- 4. Customers (100)
+        FOR i IN 1..100 LOOP
+            INSERT INTO CUSTOMER (
+                first_name, last_name, email, phone, address, city, postal_code
+            ) VALUES (
+                CASE MOD(i - 1, 10)
+                    WHEN 0 THEN 'Aarav'
+                    WHEN 1 THEN 'Priya'
+                    WHEN 2 THEN 'Rahul'
+                    WHEN 3 THEN 'Ananya'
+                    WHEN 4 THEN 'Arjun'
+                    WHEN 5 THEN 'Diya'
+                    WHEN 6 THEN 'Ishaan'
+                    WHEN 7 THEN 'Meera'
+                    WHEN 8 THEN 'Kabir'
+                    ELSE 'Sana'
+                END,
+                'Customer' || TO_CHAR(i, 'FM000'),
+                'customer' || TO_CHAR(i, 'FM000') || '@example.com',
+                '91' || TO_CHAR(7000000000 + i),
+                TO_CHAR(100 + i) || ' Market Road',
+                CASE MOD(i - 1, 8)
+                    WHEN 0 THEN 'Mumbai'
+                    WHEN 1 THEN 'Delhi'
+                    WHEN 2 THEN 'Bengaluru'
+                    WHEN 3 THEN 'Hyderabad'
+                    WHEN 4 THEN 'Chennai'
+                    WHEN 5 THEN 'Pune'
+                    WHEN 6 THEN 'Kolkata'
+                    ELSE 'Visakhapatnam'
+                END,
+                TO_CHAR(400000 + MOD(i * 37, 59999))
+            );
+        END LOOP;
 
-INSERT INTO SUPPLIER (
-    name,
-    contact_email,
-    phone,
-    address
-)
-VALUES (
-           'HomeMart',
-           'support@homemart.com',
-           '9876543212',
-           'Koramangala, Bangalore'
-       )
-    RETURNING supplier_id INTO v_sup3;
+        -- 5. Orders, order items and payments (300 orders / 600 items).
+        -- Each order has two distinct products. The order total is calculated
+        -- from the same unit prices saved in ORDER_ITEM.
+        FOR i IN 1..300 LOOP
+            SELECT customer_id INTO v_customer_id
+            FROM (
+                SELECT customer_id,
+                       ROW_NUMBER() OVER (ORDER BY customer_id) AS rn
+                FROM CUSTOMER
+            )
+            WHERE rn = MOD(i - 1, 100) + 1;
 
+            v_order_status := CASE MOD(i - 1, 5)
+                WHEN 0 THEN 'PENDING'
+                WHEN 1 THEN 'CONFIRMED'
+                WHEN 2 THEN 'SHIPPED'
+                WHEN 3 THEN 'DELIVERED'
+                ELSE 'CANCELLED'
+            END;
 
-----------------------------------------------------------------------
--- 3. PRODUCTS
--- Each product is linked to a CATEGORY and SUPPLIER
-----------------------------------------------------------------------
+            INSERT INTO ORDERS (
+                customer_id, order_date, status, total_amount, shipping_address
+            ) VALUES (
+                v_customer_id,
+                SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 7, 180), 'DAY'),
+                v_order_status,
+                0,
+                (SELECT address || ', ' || city
+                 FROM CUSTOMER
+                 WHERE customer_id = v_customer_id)
+            ) RETURNING order_id INTO v_order_id;
 
-INSERT INTO PRODUCT (
-    category_id,
-    supplier_id,
-    name,
-    description,
-    price,
-    sku,
-    stock_quantity
-)
-VALUES (
-           v_cat1,
-           v_sup1,
-           'Wireless Earbuds Pro',
-           'Bluetooth 5.3 with ANC',
-           2999.00,
-           'EAR-001',
-           100
-       )
-    RETURNING product_id INTO v_prod1;
+            SELECT product_id, price INTO v_product_id_1, v_price_1
+            FROM (
+                SELECT product_id, price,
+                       ROW_NUMBER() OVER (ORDER BY product_id) AS rn
+                FROM PRODUCT
+            )
+            WHERE rn = MOD((i * 2) - 2, 60) + 1;
 
-INSERT INTO PRODUCT (
-    category_id,
-    supplier_id,
-    name,
-    description,
-    price,
-    sku,
-    stock_quantity
-)
-VALUES (
-           v_cat1,
-           v_sup1,
-           'Smart Watch Series 5',
-           'Fitness tracking, AMOLED display',
-           4999.00,
-           'WATCH-001',
-           50
-       )
-    RETURNING product_id INTO v_prod2;
+            SELECT product_id, price INTO v_product_id_2, v_price_2
+            FROM (
+                SELECT product_id, price,
+                       ROW_NUMBER() OVER (ORDER BY product_id) AS rn
+                FROM PRODUCT
+            )
+            WHERE rn = MOD((i * 2) - 1, 60) + 1;
 
-INSERT INTO PRODUCT (
-    category_id,
-    supplier_id,
-    name,
-    description,
-    price,
-    sku,
-    stock_quantity
-)
-VALUES (
-           v_cat2,
-           v_sup2,
-           'Cotton T-Shirt',
-           'Premium organic cotton',
-           799.00,
-           'TEE-001',
-           200
-       )
-    RETURNING product_id INTO v_prod3;
+            INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
+            VALUES (v_order_id, v_product_id_1, 1 + MOD(i, 3), v_price_1);
 
-INSERT INTO PRODUCT (
-    category_id,
-    supplier_id,
-    name,
-    description,
-    price,
-    sku,
-    stock_quantity
-)
-VALUES (
-           v_cat2,
-           v_sup2,
-           'Denim Jeans',
-           'Slim fit stretch denim',
-           1499.00,
-           'JEAN-001',
-           150
-       )
-    RETURNING product_id INTO v_prod4;
+            INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
+            VALUES (v_order_id, v_product_id_2, 1 + MOD(i + 1, 2), v_price_2);
 
-INSERT INTO PRODUCT (
-    category_id,
-    supplier_id,
-    name,
-    description,
-    price,
-    sku,
-    stock_quantity
-)
-VALUES (
-           v_cat3,
-           v_sup3,
-           'Non-Stick Cookware Set',
-           '5-piece induction friendly',
-           2499.00,
-           'COOK-001',
-           80
-       )
-    RETURNING product_id INTO v_prod5;
+            SELECT SUM(quantity * unit_price) INTO v_total
+            FROM ORDER_ITEM
+            WHERE order_id = v_order_id;
 
+            UPDATE ORDERS
+            SET total_amount = v_total
+            WHERE order_id = v_order_id;
 
-----------------------------------------------------------------------
--- 4. INVENTORY
--- Each inventory record is linked to a PRODUCT
-----------------------------------------------------------------------
+            v_payment_method := CASE MOD(i - 1, 5)
+                WHEN 0 THEN 'UPI'
+                WHEN 1 THEN 'CREDIT_CARD'
+                WHEN 2 THEN 'DEBIT_CARD'
+                WHEN 3 THEN 'NET_BANKING'
+                ELSE 'COD'
+            END;
 
-INSERT INTO INVENTORY (
-    product_id,
-    warehouse_location,
-    quantity_available
-)
-VALUES (
-           v_prod1,
-           'WH-Mumbai-A1',
-           100
-       );
+            v_payment_status := CASE v_order_status
+                WHEN 'PENDING' THEN 'PENDING'
+                WHEN 'CANCELLED' THEN 'REFUNDED'
+                ELSE 'COMPLETED'
+            END;
 
-INSERT INTO INVENTORY (
-    product_id,
-    warehouse_location,
-    quantity_available
-)
-VALUES (
-           v_prod2,
-           'WH-Mumbai-A2',
-           50
-       );
+            INSERT INTO PAYMENT (
+                order_id, payment_method, amount, payment_status, transaction_date
+            ) VALUES (
+                v_order_id,
+                v_payment_method,
+                v_total,
+                v_payment_status,
+                SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 5, 180), 'DAY')
+            );
+        END LOOP;
 
-INSERT INTO INVENTORY (
-    product_id,
-    warehouse_location,
-    quantity_available
-)
-VALUES (
-           v_prod3,
-           'WH-Delhi-B1',
-           200
-       );
-
-INSERT INTO INVENTORY (
-    product_id,
-    warehouse_location,
-    quantity_available
-)
-VALUES (
-           v_prod4,
-           'WH-Delhi-B2',
-           150
-       );
-
-INSERT INTO INVENTORY (
-    product_id,
-    warehouse_location,
-    quantity_available
-)
-VALUES (
-           v_prod5,
-           'WH-Bangalore-C1',
-           80
-       );
-
-
-----------------------------------------------------------------------
--- 5. CUSTOMERS
-----------------------------------------------------------------------
-
-INSERT INTO CUSTOMER (
-    first_name,
-    last_name,
-    email,
-    phone,
-    address,
-    city,
-    postal_code
-)
-VALUES (
-           'Rahul',
-           'Sharma',
-           'rahul@example.com',
-           '9876543210',
-           '123 MG Road',
-           'Mumbai',
-           '400001'
-       )
-    RETURNING customer_id INTO v_cust1;
-
-INSERT INTO CUSTOMER (
-    first_name,
-    last_name,
-    email,
-    phone,
-    address,
-    city,
-    postal_code
-)
-VALUES (
-           'Priya',
-           'Patel',
-           'priya@example.com',
-           '9876543211',
-           '456 CP Road',
-           'Delhi',
-           '110001'
-       )
-    RETURNING customer_id INTO v_cust2;
-
-
-
-INSERT INTO CUSTOMER (
-    first_name,
-    last_name,
-    email,
-    phone,
-    address,
-    city,
-    postal_code
-)
-VALUES (
-           'Amit',
-           'Kumar',
-           'amit@example.com',
-           '9876543212',
-           '789 Brigade Road',
-           'Bangalore',
-           '560001'
-       )
-    RETURNING customer_id INTO v_cust3;
-
-
-
-
-
-----------------------------------------------------------------------
--- 6. ORDERS
--- Each order is linked to a CUSTOMER
-----------------------------------------------------------------------
-
-INSERT INTO ORDERS (
-    customer_id,
-    status,
-    total_amount,
-    shipping_address
-)
-VALUES (
-           v_cust1,
-           'CONFIRMED',
-           2999.00,
-           '123 MG Road, Mumbai'
-       )
-    RETURNING order_id INTO v_ord1;
-
-INSERT INTO ORDERS (
-    customer_id,
-    status,
-    total_amount,
-    shipping_address
-)
-VALUES (
-           v_cust2,
-           'PENDING',
-           3097.00,
-           '456 CP Road, Delhi'
-       )
-    RETURNING order_id INTO v_ord2;
-
-
-
-INSERT INTO ORDERS (
-    customer_id,
-    status,
-    total_amount,
-    shipping_address
-)
-VALUES (
-           v_cust1,
-           'SHIPPED',
-           4999.00,
-           '123 MG Road, Mumbai'
-       )
-    RETURNING order_id INTO v_ord3;
-
-
-----------------------------------------------------------------------
--- 7. ORDER ITEMS
--- Each item links an ORDER to a PRODUCT
--- Trigger automatically reduces INVENTORY
-----------------------------------------------------------------------
-
-INSERT INTO ORDER_ITEM (
-    order_id,
-    product_id,
-    quantity,
-    unit_price
-)
-VALUES (
-           v_ord1,
-           v_prod1,
-           1,
-           2999.00
-       );
-
-INSERT INTO ORDER_ITEM (
-    order_id,
-    product_id,
-    quantity,
-    unit_price
-)
-VALUES (
-           v_ord2,
-           v_prod3,
-           2,
-           799.00
-       );
-
-INSERT INTO ORDER_ITEM (
-    order_id,
-    product_id,
-    quantity,
-    unit_price
-)
-VALUES (
-           v_ord2,
-           v_prod4,
-           1,
-           1499.00
-       );
-
-INSERT INTO ORDER_ITEM (
-    order_id,
-    product_id,
-    quantity,
-    unit_price
-)
-VALUES (
-           v_ord3,
-           v_prod2,
-           1,
-           4999.00
-       );
-
-
-
-
-----------------------------------------------------------------------
--- 8. PAYMENTS
--- Each payment is linked to an ORDER
-----------------------------------------------------------------------
-
-
-
-INSERT INTO PAYMENT (
-    order_id,
-    payment_method,
-    amount,
-    payment_status
-)
-VALUES (
-           v_ord1,
-           'UPI',
-           2999.00,
-           'COMPLETED'
-       );
-
-INSERT INTO PAYMENT (
-    order_id,
-    payment_method,
-    amount,
-    payment_status
-)
-VALUES (
-           v_ord2,
-           'CREDIT_CARD',
-           3097.00,
-           'PENDING'
-       );
-
-INSERT INTO PAYMENT (
-    order_id,
-    payment_method,
-    amount,
-    payment_status
-)
-VALUES (
-           v_ord3,
-           'DEBIT_CARD',
-           4999.00,
-           'COMPLETED'
-       );
-
-
-----------------------------------------------------------------------
--- COMMIT ALL DATA
-----------------------------------------------------------------------
-
-COMMIT;
-
+        COMMIT;
+        DBMS_OUTPUT.PUT_LINE('Expanded seed data created successfully.');
+        DBMS_OUTPUT.PUT_LINE('Created 1 admin, 10 categories, 15 suppliers,');
+        DBMS_OUTPUT.PUT_LINE('60 products, 60 inventory rows, 100 customers,');
+        DBMS_OUTPUT.PUT_LINE('300 orders, 600 order items and 300 payments.');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE(
+            'Seed skipped: username admin already exists. ' ||
+            'Reset the development schema before reseeding.'
+        );
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RAISE;
 END;
