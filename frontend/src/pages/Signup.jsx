@@ -42,11 +42,11 @@ const Signup = () => {
             <div className="auth-left">
                 <div className="auth-form-wrap">
                     <div className="auth-brand">
-                        <span className="auth-brand-icon">🛒</span>
-                        <span className="auth-brand-text">OrderMgr</span>
+                        <span className="auth-brand-mark">ORDERMGR</span>
+                        <span className="auth-brand-sup">/ OMS</span>
                     </div>
                     <h1 className="auth-title">Create Account</h1>
-                    <p className="auth-subtitle">Get started with your order management system</p>
+                    <p className="auth-subtitle">Get started with your order management system.</p>
 
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="auth-row">
@@ -89,12 +89,13 @@ const Signup = () => {
             </div>
             <div className="auth-right">
                 <div className="auth-hero-content">
-                    <h2>Join Thousands of<br />Businesses</h2>
+                    <span className="auth-hero-index">Commerce Operations / 02</span>
+                    <h2>Run the<span className="outline">Operation</span></h2>
                     <p>Start managing your e-commerce operations efficiently today.</p>
                     <div className="auth-features">
-                        <span className="auth-tag">🚀 Fast Setup</span>
-                        <span className="auth-tag">🔒 Secure</span>
-                        <span className="auth-tag">📊 Analytics</span>
+                        <span className="auth-tag">Fast Setup</span>
+                        <span className="auth-tag">Secure</span>
+                        <span className="auth-tag">One System</span>
                     </div>
                 </div>
             </div>

@@ -3,6 +3,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getInventory, createInventory, updateInventory, deleteInventory } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
 
 const Inventory = () => {
   const [data, setData] = useState([]);
@@ -98,10 +99,13 @@ const Inventory = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Inventory</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Inventory</button>
-      </div>
+      <PageHeader
+        index="04"
+        title="Inventory"
+        description="Stock levels and availability across the warehouse."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Inventory</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Inventory` : `New Inventory`} size="md">

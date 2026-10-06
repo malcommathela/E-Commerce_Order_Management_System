@@ -3,6 +3,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getCustomers, getCustomer, createCustomer, updateCustomer, deleteCustomer } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
 
 const Customers = () => {
   const [data, setData] = useState([]);
@@ -107,10 +108,13 @@ const Customers = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Customers</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Customer</button>
-      </div>
+      <PageHeader
+        index="05"
+        title="Customers"
+        description="Customer records and relationships."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Customer</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Customer` : `New Customer`} size="md">

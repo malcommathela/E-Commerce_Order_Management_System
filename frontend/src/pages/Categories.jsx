@@ -3,6 +3,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getCategories, getCategory, createCategory, updateCategory, deleteCategory } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
 
 const Categories = () => {
   const [data, setData] = useState([]);
@@ -92,10 +93,13 @@ const Categories = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Categories</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Category</button>
-      </div>
+      <PageHeader
+        index="08"
+        title="Categories"
+        description="Product taxonomy and classification."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Category</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Category` : `New Category`} size="md">

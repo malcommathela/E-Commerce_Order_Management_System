@@ -1,19 +1,25 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #f3f4f6;
+  background: var(--color-white);
+  color: var(--color-black);
 }
 .layout-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 240px;
+  margin-left: var(--sidebar-width);
+  min-width: 0;
 }
 .layout-content {
   flex: 1;
-  padding: 24px 28px;
+  padding: 32px var(--page-gutter) 64px;
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
   overflow-y: auto;
 }
 @media (max-width: 768px) {
   .layout-main { margin-left: 0; }
+  .layout-content { padding: 24px 20px 48px; }
 }

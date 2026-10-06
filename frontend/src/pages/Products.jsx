@@ -3,6 +3,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getProducts, getProduct, createProduct, updateProduct, deleteProduct } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
 
 const Products = () => {
   const [data, setData] = useState([]);
@@ -100,10 +101,13 @@ const Products = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Products</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Product</button>
-      </div>
+      <PageHeader
+        index="03"
+        title="Products"
+        description="Catalog, pricing and product details."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Product</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Product` : `New Product`} size="md">

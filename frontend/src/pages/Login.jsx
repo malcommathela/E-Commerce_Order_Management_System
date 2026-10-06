@@ -39,11 +39,11 @@ const Login = () => {
             <div className="auth-left">
                 <div className="auth-form-wrap">
                     <div className="auth-brand">
-                        <span className="auth-brand-icon">🛒</span>
-                        <span className="auth-brand-text">OrderMgr</span>
+                        <span className="auth-brand-mark">ORDERMGR</span>
+                        <span className="auth-brand-sup">/ OMS</span>
                     </div>
-                    <h1 className="auth-title">Welcome Back</h1>
-                    <p className="auth-subtitle">Sign in to manage your orders and inventory</p>
+                    <h1 className="auth-title">Sign In</h1>
+                    <p className="auth-subtitle">Manage orders, inventory and commerce operations from one place.</p>
 
                     <form onSubmit={handleSubmit} className="auth-form">
                         <div className="auth-input-group">
@@ -77,12 +77,13 @@ const Login = () => {
             </div>
             <div className="auth-right">
                 <div className="auth-hero-content">
-                    <h2>Streamline Your<br />Order Management</h2>
+                    <span className="auth-hero-index">Commerce Operations / 01</span>
+                    <h2>Commerce<span className="outline">Operations</span></h2>
                     <p>Track inventory, manage customers, and process orders — all in one place.</p>
                     <div className="auth-features">
-                        <span className="auth-tag">📦 Orders</span>
-                        <span className="auth-tag">📋 Inventory</span>
-                        <span className="auth-tag">👥 Customers</span>
+                        <span className="auth-tag">Orders</span>
+                        <span className="auth-tag">Inventory</span>
+                        <span className="auth-tag">Customers</span>
                     </div>
                 </div>
             </div>

@@ -10,9 +10,10 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
         return (
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: '100vh', fontFamily: 'sans-serif', color: '#6b7280'
+                height: '100vh', fontFamily: 'monospace', fontSize: 12,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: '#525252'
             }}>
-                Loading…
+                Loading / System
             </div>
         );
     }

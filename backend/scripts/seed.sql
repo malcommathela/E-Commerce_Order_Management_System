@@ -4,7 +4,7 @@
 -- Run only against a development database.
 
 DECLARE
-    v_existing_seed NUMBER;
+v_existing_seed NUMBER;
     v_existing_count NUMBER;
     v_category_id NUMBER;
     v_supplier_id NUMBER;
@@ -133,9 +133,9 @@ BEGIN
     v_last_names(4) := 'Nair';
     v_last_names(5) := 'Mehta';
 
-    SELECT COUNT(*) INTO v_existing_seed FROM PRODUCT WHERE sku = 'ELEC-IPH15-128';
+SELECT COUNT(*) INTO v_existing_seed FROM PRODUCT WHERE sku = 'ELEC-IPH15-128';
 
-    IF v_existing_seed = 0 THEN
+IF v_existing_seed = 0 THEN
         -- Categories
         FOR i IN 1..10 LOOP
             v_category_name := CASE i
@@ -149,18 +149,18 @@ BEGIN
                 WHEN 8 THEN 'Office Supplies'
                 WHEN 9 THEN 'Footwear'
                 ELSE 'Accessories'
-            END;
-            SELECT COUNT(*) INTO v_existing_count FROM CATEGORY WHERE name = v_category_name;
-            IF v_existing_count = 0 THEN
+END;
+SELECT COUNT(*) INTO v_existing_count FROM CATEGORY WHERE name = v_category_name;
+IF v_existing_count = 0 THEN
                 INSERT INTO CATEGORY (name, description)
                 VALUES (v_category_name, v_category_name || ' products and essentials');
-            END IF;
-        END LOOP;
+END IF;
+END LOOP;
 
         -- Suppliers
-        FOR i IN 1..15 LOOP
-            SELECT COUNT(*) INTO v_existing_count FROM SUPPLIER WHERE name = v_supplier_names(i);
-            IF v_existing_count = 0 THEN
+FOR i IN 1..15 LOOP
+SELECT COUNT(*) INTO v_existing_count FROM SUPPLIER WHERE name = v_supplier_names(i);
+IF v_existing_count = 0 THEN
                 INSERT INTO SUPPLIER (name, contact_email, phone, address)
                 VALUES (
                     v_supplier_names(i),
@@ -173,41 +173,41 @@ BEGIN
                         ELSE 'Chennai'
                     END
                 );
-            END IF;
-        END LOOP;
+END IF;
+END LOOP;
 
         -- Products and inventory
-        FOR i IN 1..60 LOOP
+FOR i IN 1..60 LOOP
             v_category_name := CASE CEIL(i / 6)
                 WHEN 1 THEN 'Electronics' WHEN 2 THEN 'Clothing'
                 WHEN 3 THEN 'Home & Kitchen' WHEN 4 THEN 'Books'
                 WHEN 5 THEN 'Sports & Outdoors' WHEN 6 THEN 'Beauty & Personal Care'
                 WHEN 7 THEN 'Toys & Games' WHEN 8 THEN 'Office Supplies'
                 WHEN 9 THEN 'Footwear' ELSE 'Accessories'
-            END;
-            SELECT category_id INTO v_category_id FROM CATEGORY WHERE name = v_category_name FETCH FIRST 1 ROW ONLY;
-            SELECT supplier_id INTO v_supplier_id FROM SUPPLIER WHERE name = v_supplier_names(MOD(i - 1, 15) + 1) FETCH FIRST 1 ROW ONLY;
+END;
+SELECT category_id INTO v_category_id FROM CATEGORY WHERE name = v_category_name FETCH FIRST 1 ROW ONLY;
+SELECT supplier_id INTO v_supplier_id FROM SUPPLIER WHERE name = v_supplier_names(MOD(i - 1, 15) + 1) FETCH FIRST 1 ROW ONLY;
 
-            INSERT INTO PRODUCT (category_id, supplier_id, name, description, price, sku, stock_quantity)
-            VALUES (v_category_id, v_supplier_id, v_product_names(i), v_product_descriptions(i), v_product_prices(i), v_product_skus(i), 500)
-            RETURNING product_id INTO v_product_id;
+INSERT INTO PRODUCT (category_id, supplier_id, name, description, price, sku, stock_quantity)
+VALUES (v_category_id, v_supplier_id, v_product_names(i), v_product_descriptions(i), v_product_prices(i), v_product_skus(i), 500)
+    RETURNING product_id INTO v_product_id;
 
-            INSERT INTO INVENTORY (product_id, warehouse_location, quantity_available)
-            VALUES (
-                v_product_id,
-                CASE MOD(i - 1, 5)
-                    WHEN 0 THEN 'Mumbai Fulfilment Centre'
-                    WHEN 1 THEN 'Delhi Distribution Centre'
-                    WHEN 2 THEN 'Bengaluru Distribution Centre'
-                    WHEN 3 THEN 'Hyderabad Distribution Centre'
-                    ELSE 'Chennai Fulfilment Centre'
-                END,
-                500
-            );
-        END LOOP;
+INSERT INTO INVENTORY (product_id, warehouse_location, quantity_available)
+VALUES (
+           v_product_id,
+           CASE MOD(i - 1, 5)
+               WHEN 0 THEN 'Mumbai Fulfilment Centre'
+               WHEN 1 THEN 'Delhi Distribution Centre'
+               WHEN 2 THEN 'Bengaluru Distribution Centre'
+               WHEN 3 THEN 'Hyderabad Distribution Centre'
+               ELSE 'Chennai Fulfilment Centre'
+               END,
+           500
+       );
+END LOOP;
 
         -- Customers
-        FOR i IN 1..100 LOOP
+FOR i IN 1..100 LOOP
             INSERT INTO CUSTOMER (
                 first_name, last_name, email, phone, address, city, postal_code
             ) VALUES (
@@ -226,78 +226,78 @@ BEGIN
                 END,
                 TO_CHAR(400000 + MOD(i * 37, 59999))
             );
-        END LOOP;
+END LOOP;
 
         -- Orders, items and payments
-        FOR i IN 1..300 LOOP
-            SELECT customer_id INTO v_customer_id
-            FROM (
-                SELECT customer_id, ROW_NUMBER() OVER (ORDER BY customer_id) rn
-                FROM CUSTOMER
-                WHERE email LIKE '%@example.com'
-            )
-            WHERE rn = MOD(i - 1, 100) + 1;
+FOR i IN 1..300 LOOP
+SELECT customer_id INTO v_customer_id
+FROM (
+         SELECT customer_id, ROW_NUMBER() OVER (ORDER BY customer_id) rn
+         FROM CUSTOMER
+         WHERE email LIKE '%@example.com'
+     )
+WHERE rn = MOD(i - 1, 100) + 1;
 
-            v_order_status := CASE MOD(i - 1, 5)
+v_order_status := CASE MOD(i - 1, 5)
                 WHEN 0 THEN 'PENDING' WHEN 1 THEN 'CONFIRMED'
                 WHEN 2 THEN 'SHIPPED' WHEN 3 THEN 'DELIVERED'
                 ELSE 'CANCELLED'
-            END;
+END;
 
-            INSERT INTO ORDERS (customer_id, order_date, status, total_amount, shipping_address)
-            VALUES (
-                v_customer_id,
-                SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 7, 180), 'DAY'),
-                v_order_status,
-                0,
-                (SELECT address || ', ' || city FROM CUSTOMER WHERE customer_id = v_customer_id)
-            ) RETURNING order_id INTO v_order_id;
+INSERT INTO ORDERS (customer_id, order_date, status, total_amount, shipping_address)
+VALUES (
+           v_customer_id,
+           SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 7, 180), 'DAY'),
+           v_order_status,
+           0,
+           (SELECT address || ', ' || city FROM CUSTOMER WHERE customer_id = v_customer_id)
+       ) RETURNING order_id INTO v_order_id;
 
-            SELECT product_id, price INTO v_product_id_1, v_price_1
-            FROM (
-                SELECT product_id, price, ROW_NUMBER() OVER (ORDER BY product_id) rn
-                FROM PRODUCT WHERE sku LIKE '___-___-%'
-            )
-            WHERE rn = MOD((i * 2) - 2, 60) + 1;
+SELECT product_id, price INTO v_product_id_1, v_price_1
+FROM (
+         SELECT product_id, price, ROW_NUMBER() OVER (ORDER BY product_id) rn
+         FROM PRODUCT WHERE sku LIKE '%-%-%'
+     )
+WHERE rn = MOD((i * 2) - 2, 60) + 1;
 
-            SELECT product_id, price INTO v_product_id_2, v_price_2
-            FROM (
-                SELECT product_id, price, ROW_NUMBER() OVER (ORDER BY product_id) rn
-                FROM PRODUCT WHERE sku LIKE '___-___-%'
-            )
-            WHERE rn = MOD((i * 2) - 1, 60) + 1;
+SELECT product_id, price INTO v_product_id_2, v_price_2
+FROM (
+         SELECT product_id, price, ROW_NUMBER() OVER (ORDER BY product_id) rn
+         FROM PRODUCT WHERE sku LIKE '%-%-%'
+     )
+WHERE rn = MOD((i * 2) - 1, 60) + 1;
 
-            INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
-            VALUES (v_order_id, v_product_id_1, 1 + MOD(i, 3), v_price_1);
-            INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
-            VALUES (v_order_id, v_product_id_2, 1 + MOD(i + 1, 2), v_price_2);
+INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
+VALUES (v_order_id, v_product_id_1, 1 + MOD(i, 3), v_price_1);
+INSERT INTO ORDER_ITEM (order_id, product_id, quantity, unit_price)
+VALUES (v_order_id, v_product_id_2, 1 + MOD(i + 1, 2), v_price_2);
 
-            SELECT SUM(quantity * unit_price) INTO v_total FROM ORDER_ITEM WHERE order_id = v_order_id;
-            UPDATE ORDERS SET total_amount = v_total WHERE order_id = v_order_id;
+SELECT SUM(quantity * unit_price) INTO v_total FROM ORDER_ITEM WHERE order_id = v_order_id;
+UPDATE ORDERS SET total_amount = v_total WHERE order_id = v_order_id;
 
-            v_payment_method := CASE MOD(i - 1, 5)
+v_payment_method := CASE MOD(i - 1, 5)
                 WHEN 0 THEN 'UPI' WHEN 1 THEN 'CREDIT_CARD'
                 WHEN 2 THEN 'DEBIT_CARD' WHEN 3 THEN 'NET_BANKING'
                 ELSE 'COD'
-            END;
+END;
             v_payment_status := CASE v_order_status
                 WHEN 'PENDING' THEN 'PENDING'
                 WHEN 'CANCELLED' THEN 'REFUNDED'
                 ELSE 'COMPLETED'
-            END;
+END;
 
-            INSERT INTO PAYMENT (order_id, payment_method, amount, payment_status, transaction_date)
-            VALUES (
-                v_order_id, v_payment_method, v_total, v_payment_status,
-                SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 5, 180), 'DAY')
-            );
-        END LOOP;
+INSERT INTO PAYMENT (order_id, payment_method, amount, payment_status, transaction_date)
+VALUES (
+           v_order_id, v_payment_method, v_total, v_payment_status,
+           SYSTIMESTAMP - NUMTODSINTERVAL(MOD(i * 5, 180), 'DAY')
+       );
+END LOOP;
 
-        COMMIT;
-        DBMS_OUTPUT.PUT_LINE('Realistic seed data created: 10 categories, 15 suppliers, 60 products, 100 customers, 300 orders, 600 items, 300 payments.');
-    ELSE
+COMMIT;
+DBMS_OUTPUT.PUT_LINE('Realistic seed data created: 10 categories, 15 suppliers, 60 products, 100 customers, 300 orders, 600 items, 300 payments.');
+ELSE
         DBMS_OUTPUT.PUT_LINE('Seed skipped: realistic catalogue already exists.');
-    END IF;
+END IF;
 EXCEPTION
     WHEN OTHERS THEN
         ROLLBACK;
