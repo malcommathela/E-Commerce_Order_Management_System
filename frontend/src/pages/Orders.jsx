@@ -3,6 +3,8 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getOrders, getOrder, createOrder, updateOrder, deleteOrder } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
 
 const Orders = () => {
   const [data, setData] = useState([]);
@@ -87,7 +89,7 @@ const Orders = () => {
     { key: "order_id", label: "Order Id" },
     { key: "customer_name", label: "Customer Name" },
     { key: "order_date", label: "Order Date", render: (v) => v ? new Date(v).toLocaleDateString() : "—" },
-    { key: "status", label: "Status", render: (v) => <span className={`badge badge-${(v || "").toLowerCase()}`}>{v}</span> },
+    { key: "status", label: "Status", render: (v) => <StatusBadge status={v} /> },
     { key: "total_amount", label: "Total Amount", render: (v) => `₹${v || 0}` }
   ];
 
@@ -100,10 +102,13 @@ const Orders = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Orders</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Order</button>
-      </div>
+      <PageHeader
+        index="02"
+        title="Orders"
+        description="Manage the complete order lifecycle, from placement to fulfillment."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Order</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Order` : `New Order`} size="md">

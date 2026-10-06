@@ -3,6 +3,8 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getPayments, getPayment, createPayment, updatePayment, deletePayment } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
+import StatusBadge from '../components/StatusBadge';
 
 const Payments = () => {
   const [data, setData] = useState([]);
@@ -89,7 +91,7 @@ const Payments = () => {
     { key: "payment_date", label: "Payment Date", render: (v) => v ? new Date(v).toLocaleDateString() : "—" },
     { key: "amount", label: "Amount", render: (v) => `₹${v || 0}` },
     { key: "payment_method", label: "Payment Method" },
-    { key: "status", label: "Status", render: (v) => <span className={`badge badge-${(v || "").toLowerCase()}`}>{v}</span> }
+    { key: "status", label: "Status", render: (v) => <StatusBadge status={v} /> }
   ];
 
   const actions = (row) => (
@@ -101,10 +103,13 @@ const Payments = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Payments</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Payment</button>
-      </div>
+      <PageHeader
+        index="06"
+        title="Payments"
+        description="Transactions, settlement status and payment history."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Payment</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Payment` : `New Payment`} size="md">

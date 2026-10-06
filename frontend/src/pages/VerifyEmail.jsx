@@ -83,13 +83,13 @@ const VerifyEmail = () => {
             <div className="auth-left">
                 <div className="auth-form-wrap">
                     <div className="auth-brand">
-                        <span className="auth-brand-icon">🛒</span>
-                        <span className="auth-brand-text">OrderMgr</span>
+                        <span className="auth-brand-mark">ORDERMGR</span>
+                        <span className="auth-brand-sup">/ OMS</span>
                     </div>
-                    <h1 className="auth-title">Verify Your Email</h1>
+                    <h1 className="auth-title">Verify Email</h1>
                     <p className="auth-subtitle">
                         Enter the 6-digit code sent to<br />
-                        <strong style={{ color: '#111827' }}>{email}</strong>
+                        <strong>{email}</strong>
                     </p>
 
                     <form onSubmit={handleSubmit}>
@@ -125,8 +125,9 @@ const VerifyEmail = () => {
             </div>
             <div className="auth-right">
                 <div className="auth-hero-content">
-                    <h2>Almost There</h2>
-                    <p>Verify your email to secure your account and get full access to the dashboard.</p>
+                    <span className="auth-hero-index">Commerce Operations / 03</span>
+                    <h2>Almost<span className="outline">There</span></h2>
+                    <p>Verify your email to secure your account and get full access.</p>
                 </div>
             </div>
         </div>

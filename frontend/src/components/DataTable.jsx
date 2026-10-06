@@ -33,13 +33,17 @@ const DataTable = ({ columns, data, onRowClick, actions, loading }) => {
   return (
     <div className="data-table-wrap">
       <div className="table-toolbar">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="table-search"
-        />
+        <div className="table-search-wrap">
+          <span className="table-search-label">Search / Filter</span>
+          <input
+            type="text"
+            placeholder="Type to filter records..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="table-search"
+            aria-label="Search records"
+          />
+        </div>
         <span className="table-count">{sorted.length} records</span>
       </div>
       <div className="table-scroll">
@@ -56,9 +60,15 @@ const DataTable = ({ columns, data, onRowClick, actions, loading }) => {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="table-empty">Loading...</td></tr>
+              <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="table-empty">
+                <span className="table-empty-title">Loading</span>
+                <span className="table-empty-sub">Fetching records…</span>
+              </td></tr>
             ) : sorted.length === 0 ? (
-              <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="table-empty">No records found</td></tr>
+              <tr><td colSpan={columns.length + (actions ? 1 : 0)} className="table-empty">
+                <span className="table-empty-title">No records</span>
+                <span className="table-empty-sub">Nothing matches this view</span>
+              </td></tr>
             ) : (
               sorted.map((row, i) => (
                 <tr key={i} onClick={() => onRowClick?.(row)} className={onRowClick ? 'clickable' : ''}>

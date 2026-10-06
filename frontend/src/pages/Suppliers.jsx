@@ -3,6 +3,7 @@ import DataTable from '../components/DataTable';
 import Modal from '../components/Modal';
 import { getSuppliers, getSupplier, createSupplier, updateSupplier, deleteSupplier } from '../api/apiService';
 import './EntityPage.css';
+import PageHeader from '../components/PageHeader';
 
 const Suppliers = () => {
   const [data, setData] = useState([]);
@@ -100,10 +101,13 @@ const Suppliers = () => {
 
   return (
     <div className="entity-page">
-      <div className="page-header">
-        <h2>Suppliers</h2>
-        <button className="btn-primary" onClick={openCreate}>+ Add Supplier</button>
-      </div>
+      <PageHeader
+        index="07"
+        title="Suppliers"
+        description="Supplier directory and sourcing contacts."
+        countLabel={`${data.length} records`}
+        action={<button className="btn-primary" onClick={openCreate}>+ Add Supplier</button>}
+      />
       {error && <div className="alert-error">{error}</div>}
       <DataTable columns={columns} data={data} actions={actions} loading={loading} />
       <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={editing ? `Edit Supplier` : `New Supplier`} size="md">
