@@ -20,7 +20,7 @@ oracledb.fetchAsString = [oracledb.CLOB]; // Auto-convert CLOBs to strings
 const dbConfig = {
     user: process.env.DB_USER || 'ecommerce_user',
     password: process.env.DB_PASSWORD || 'ecommerce_pass',
-    connectString: process.env.DB_CONNECTION_STRING || 'localhost:1521/XEPDB1'
+    connectString: process.env.DB_CONNECTION_STRING || 'localhost:1522/XEPDB1'
 };
 
 let pool;
